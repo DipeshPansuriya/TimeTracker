@@ -1,0 +1,1188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Office Time Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&family=Chakra+Petch:wght@400;600&family=Roboto+Mono:wght@400;500&display=swap">
+
+<style>
+/* ───────────────── Kalé Deep Sea tokens ───────────────── */
+:root{
+  --deep-sea:#081F4B; --noon:#EB4A26; --blue-sea:#3B97FF; --evening-sky:#76CBFF;
+  --iceberg:#B6E3FF; --snow:#FFFFFF; --morning:#FCF0D9; --twilight:#ECECE4;
+  --road:#585858; --night:#202020;
+
+  --ok:#2e7d32;   --ok-bg:#e8f5e9;
+  --warn:#e65100; --warn-bg:#fff3e0;
+  --dang:#c62828; --dang-bg:#fbe9e7;
+  --info:#3B97FF; --info-bg:#B6E3FF;
+
+  --font-sans:'Roboto','Segoe UI',system-ui,Arial,sans-serif;
+  --font-tech:'Chakra Petch','Roboto','Segoe UI',sans-serif;
+  --font-mono:'Roboto Mono','Consolas','Monaco',monospace;
+
+  /* themed surfaces — light is the brand default */
+  --page-bg:#F3F4F1;
+  --surface:#FFFFFF;
+  --surface-2:#FAFAF7;
+  --surface-inset:#F6F7F4;
+  --ink:#202020;
+  --ink-muted:#585858;
+  --ink-heading:#081F4B;
+  --line:#ECECE4;
+  --line-soft:#F1F1EC;
+  --shadow-sm:0 1px 2px rgba(8,31,75,.06);
+  --shadow-md:0 6px 20px rgba(8,31,75,.10);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page-bg:#070E1C;
+    --surface:#0D1830;
+    --surface-2:#0A1426;
+    --surface-inset:#0A1426;
+    --ink:#EEF3FA;
+    --ink-muted:#96AAC6;
+    --ink-heading:#CFE4FA;
+    --line:#1B2B4A;
+    --line-soft:#152340;
+    --ok-bg:#11291b; --warn-bg:#2c1b09; --dang-bg:#2c1311; --info-bg:#102743;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+    --shadow-md:0 6px 20px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --page-bg:#070E1C;
+  --surface:#0D1830;
+  --surface-2:#0A1426;
+  --surface-inset:#0A1426;
+  --ink:#EEF3FA;
+  --ink-muted:#96AAC6;
+  --ink-heading:#CFE4FA;
+  --line:#1B2B4A;
+  --line-soft:#152340;
+  --ok-bg:#11291b; --warn-bg:#2c1b09; --dang-bg:#2c1311; --info-bg:#102743;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 6px 20px rgba(0,0,0,.45);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--page-bg); color:var(--ink);
+  font-family:var(--font-sans); font-size:14px; line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0; color:var(--ink-heading); text-wrap:balance; letter-spacing:-.02em}
+h1{font-size:32px; font-weight:700; line-height:1.15}
+h2{font-size:24px; font-weight:700}
+h3{font-size:18px; font-weight:600; letter-spacing:0}
+p{margin:0}
+a{color:var(--blue-sea)}
+button{font-family:inherit; font-size:inherit; cursor:pointer}
+:focus-visible{outline:2px solid var(--blue-sea); outline-offset:2px; border-radius:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+
+.num{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--font-mono); font-variant-numeric:tabular-nums}
+.eyebrow{
+  font-family:var(--font-tech); font-size:10px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.18em; color:var(--ink-muted);
+}
+
+/* ───────────────── page frame ───────────────── */
+.rule-top{height:4px; background:var(--deep-sea)}
+.rule-bottom{height:4px; background:var(--noon)}
+.wrap{max-width:1180px; margin:0 auto; padding:0 24px}
+
+header.masthead{padding:28px 0 22px; border-bottom:1px solid var(--line)}
+.mast-row{display:flex; align-items:flex-start; gap:24px; flex-wrap:wrap}
+.mast-main{flex:1 1 420px; display:flex; flex-direction:column; gap:10px}
+.logo{width:150px; height:auto; display:block}
+.mast-side{display:flex; flex-direction:column; align-items:flex-end; gap:10px}
+.lede{color:var(--ink-muted); max-width:62ch; font-size:15px}
+
+.theme-toggle{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--surface); color:var(--ink-muted);
+  border:1px solid var(--line); border-radius:999px; padding:5px 12px;
+  font-family:var(--font-tech); font-size:11px; font-weight:600;
+  letter-spacing:.08em; text-transform:uppercase;
+  transition:border-color .15s, color .15s;
+}
+.theme-toggle:hover{border-color:var(--blue-sea); color:var(--blue-sea)}
+
+/* ───────────────── scenario chips ───────────────── */
+.scenarios{display:flex; gap:8px; flex-wrap:wrap; padding:20px 0 0}
+.chip{
+  background:var(--surface); border:1px solid var(--line); color:var(--ink-muted);
+  border-radius:8px; padding:9px 14px; text-align:left; line-height:1.35;
+  transition:border-color .15s, box-shadow .15s, background .15s;
+}
+.chip b{display:block; color:var(--ink-heading); font-weight:600; font-size:13px}
+.chip span{font-size:11px; font-family:var(--font-tech); letter-spacing:.04em}
+.chip:hover{border-color:var(--blue-sea)}
+.chip[aria-pressed="true"]{
+  border-color:var(--deep-sea); background:var(--surface);
+  box-shadow:inset 0 -3px 0 var(--noon), var(--shadow-sm);
+}
+:root[data-theme="dark"] .chip[aria-pressed="true"],
+:root:not([data-theme="light"]) .chip[aria-pressed="true"]{border-color:var(--blue-sea)}
+
+/* ───────────────── layout ───────────────── */
+.grid{
+  display:grid; grid-template-columns:376px minmax(0,1fr);
+  gap:32px; align-items:start; padding:28px 0 48px;
+}
+@media (max-width:940px){ .grid{grid-template-columns:minmax(0,1fr)} }
+
+.stack{display:flex; flex-direction:column; gap:20px; min-width:0}
+.sticky{position:sticky; top:20px; display:flex; flex-direction:column; gap:16px}
+@media (max-width:940px){ .sticky{position:static} }
+
+.card{
+  background:var(--surface); border:1px solid var(--line);
+  border-radius:8px; box-shadow:var(--shadow-sm); overflow:hidden;
+}
+.card-hd{
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  padding:14px 18px; border-bottom:1px solid var(--line); flex-wrap:wrap;
+}
+.card-hd h3{font-size:15px}
+.card-bd{padding:18px}
+
+/* ───────────────── the widget ───────────────── */
+.desk{
+  background:linear-gradient(160deg,#12305F 0%,#081F4B 60%,#06183B 100%);
+  border-radius:10px; padding:22px 18px; box-shadow:var(--shadow-md);
+}
+.desk-bar{
+  display:flex; align-items:center; gap:6px; padding:0 4px 14px;
+}
+.dot{width:9px; height:9px; border-radius:50%; background:rgba(255,255,255,.22)}
+.desk-bar span{
+  margin-left:auto; font-family:var(--font-tech); font-size:10px;
+  letter-spacing:.14em; text-transform:uppercase; color:rgba(118,203,255,.7);
+}
+
+.widget{
+  background:var(--deep-sea); border:1px solid rgba(118,203,255,.22);
+  border-radius:8px; overflow:hidden; color:var(--snow);
+  box-shadow:0 10px 30px rgba(0,0,0,.35);
+}
+.w-hd{
+  display:flex; align-items:center; gap:9px;
+  padding:11px 14px; border-bottom:1px solid rgba(118,203,255,.16);
+  background:rgba(255,255,255,.03);
+}
+.w-mark{width:16px; height:16px; flex:none}
+.w-hd h4{
+  margin:0; font-size:12px; font-weight:600; letter-spacing:.02em; color:var(--snow);
+}
+.w-pin{
+  margin-left:auto; font-family:var(--font-tech); font-size:9px;
+  letter-spacing:.16em; text-transform:uppercase; color:rgba(118,203,255,.65);
+}
+.w-bd{padding:14px}
+
+.w-state{display:flex; align-items:center; gap:8px; margin-bottom:13px}
+.w-dot{width:8px; height:8px; border-radius:50%; flex:none}
+.w-dot.on{background:#4caf50; box-shadow:0 0 0 3px rgba(76,175,80,.2)}
+.w-dot.brk{background:#ffb300; box-shadow:0 0 0 3px rgba(255,179,0,.2)}
+.w-dot.off{background:#78909c; box-shadow:0 0 0 3px rgba(120,144,156,.2)}
+.w-state b{font-size:13px; font-weight:600}
+.w-loc{
+  margin-left:auto; font-family:var(--font-tech); font-size:9px; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase;
+  color:var(--deep-sea); background:var(--evening-sky);
+  padding:2px 7px; border-radius:999px;
+}
+
+.w-rows{display:flex; flex-direction:column; gap:6px; margin-bottom:13px}
+.w-row{display:flex; align-items:baseline; justify-content:space-between; gap:10px; font-size:12px}
+.w-row dt{color:var(--evening-sky); font-family:var(--font-tech); letter-spacing:.04em}
+.w-row dd{
+  margin:0; font-family:var(--font-mono); font-size:13px; font-weight:500;
+  font-variant-numeric:tabular-nums; color:var(--snow);
+}
+.w-row dd.hi{font-size:15px; font-weight:500}
+.w-row dd.pos{color:#8bd48f}
+.w-row dd.neg{color:#ffab91}
+
+.w-prog{margin-bottom:14px}
+.w-track{
+  position:relative; height:7px; border-radius:4px;
+  background:rgba(255,255,255,.12); overflow:hidden;
+}
+.w-fill{
+  height:100%; border-radius:4px; background:var(--evening-sky);
+  transition:width .25s cubic-bezier(.2,0,0,1);
+}
+.w-fill.done{background:#66bb6a}
+.w-mark-half{
+  position:absolute; top:-3px; bottom:-3px; width:1px;
+  background:rgba(255,255,255,.55);
+}
+.w-scale{
+  display:flex; justify-content:space-between; margin-top:5px;
+  font-family:var(--font-tech); font-size:9px; letter-spacing:.1em;
+  text-transform:uppercase; color:rgba(118,203,255,.75);
+}
+
+.w-task{
+  border:1px solid rgba(118,203,255,.2); border-left:3px solid var(--evening-sky);
+  border-radius:4px; padding:9px 11px; margin-bottom:13px; background:rgba(255,255,255,.03);
+}
+.w-task .lbl{
+  font-family:var(--font-tech); font-size:9px; letter-spacing:.16em;
+  text-transform:uppercase; color:rgba(118,203,255,.8); display:block; margin-bottom:3px;
+}
+.w-task .ttl{font-size:12.5px; font-weight:500; line-height:1.35}
+.w-task .meta{
+  display:flex; justify-content:space-between; gap:8px; margin-top:5px;
+  font-family:var(--font-mono); font-size:10.5px; color:var(--evening-sky);
+}
+
+.w-acts{display:flex; gap:6px; margin-bottom:13px}
+.w-acts button{
+  flex:1; padding:7px 4px; border-radius:5px; font-size:11px; font-weight:500;
+  border:1px solid rgba(118,203,255,.3); background:transparent; color:var(--snow);
+  transition:background .15s, border-color .15s;
+}
+.w-acts button:hover{background:rgba(118,203,255,.14); border-color:var(--evening-sky)}
+.w-acts button.pri{background:var(--evening-sky); border-color:var(--evening-sky); color:var(--deep-sea); font-weight:600}
+.w-acts button.pri:hover{filter:brightness(.93)}
+
+.w-ft{
+  display:flex; justify-content:space-between; gap:8px;
+  padding-top:11px; border-top:1px solid rgba(118,203,255,.16);
+}
+.w-ft div{display:flex; flex-direction:column; gap:2px}
+.w-ft .k{
+  font-family:var(--font-tech); font-size:9px; letter-spacing:.14em;
+  text-transform:uppercase; color:rgba(118,203,255,.8);
+}
+.w-ft .v{font-family:var(--font-mono); font-size:12.5px; font-variant-numeric:tabular-nums}
+
+/* toasts under the widget */
+.toasts{display:flex; flex-direction:column; gap:7px}
+.toast{
+  display:flex; gap:9px; align-items:flex-start;
+  background:var(--surface); border:1px solid var(--line);
+  border-left:4px solid var(--info); border-radius:4px;
+  padding:9px 12px; font-size:12px; box-shadow:var(--shadow-sm);
+  animation:slide .28s cubic-bezier(.2,0,0,1);
+}
+@keyframes slide{from{opacity:0; transform:translateY(-3px)}to{opacity:1; transform:none}}
+.toast.ok{border-left-color:var(--ok)}
+.toast.warn{border-left-color:var(--warn)}
+.toast .t{font-weight:500; color:var(--ink-heading)}
+.toast .s{color:var(--ink-muted); font-size:11px}
+.toast time{
+  margin-left:auto; font-family:var(--font-mono); font-size:10px;
+  color:var(--ink-muted); flex:none;
+}
+
+/* ───────────────── simulator ───────────────── */
+.sim-top{display:flex; align-items:flex-end; gap:20px; flex-wrap:wrap; margin-bottom:16px}
+.sim-clock{display:flex; flex-direction:column; gap:1px}
+.sim-clock .big{
+  font-family:var(--font-mono); font-size:38px; font-weight:500; line-height:1;
+  color:var(--ink-heading); font-variant-numeric:tabular-nums; letter-spacing:-.01em;
+}
+.sim-btns{display:flex; gap:7px; margin-left:auto}
+.btn{
+  border:1px solid var(--line); background:var(--surface); color:var(--ink);
+  border-radius:8px; padding:8px 14px; font-size:12.5px; font-weight:500;
+  transition:border-color .15s, background .15s, color .15s;
+}
+.btn:hover{border-color:var(--blue-sea); color:var(--blue-sea)}
+.btn.pri{background:var(--deep-sea); border-color:var(--deep-sea); color:var(--snow)}
+.btn.pri:hover{filter:brightness(1.15); color:var(--snow)}
+
+input[type=range]{
+  -webkit-appearance:none; appearance:none; width:100%; height:22px;
+  background:transparent; cursor:grab; display:block;
+}
+input[type=range]:active{cursor:grabbing}
+input[type=range]::-webkit-slider-runnable-track{
+  height:5px; border-radius:3px; background:var(--line);
+}
+input[type=range]::-moz-range-track{height:5px; border-radius:3px; background:var(--line)}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none; appearance:none; width:17px; height:17px; margin-top:-6px;
+  border-radius:50%; background:var(--deep-sea); border:2px solid var(--surface);
+  box-shadow:0 1px 4px rgba(8,31,75,.4);
+}
+input[type=range]::-moz-range-thumb{
+  width:17px; height:17px; border-radius:50%; background:var(--deep-sea);
+  border:2px solid var(--surface); box-shadow:0 1px 4px rgba(8,31,75,.4);
+}
+:root[data-theme="dark"] input[type=range]::-webkit-slider-thumb,
+:root:not([data-theme="light"]) input[type=range]::-webkit-slider-thumb{background:var(--evening-sky)}
+:root[data-theme="dark"] input[type=range]::-moz-range-thumb,
+:root:not([data-theme="light"]) input[type=range]::-moz-range-thumb{background:var(--evening-sky)}
+
+/* day timeline */
+.tl{margin-top:6px}
+.tl-bar{
+  display:flex; height:30px; border-radius:5px; overflow:hidden;
+  border:1px solid var(--line); background:var(--surface-inset);
+}
+.tl-seg{position:relative; transition:opacity .2s}
+.tl-seg.future{opacity:.26}
+.tl-seg[data-t="office"]{background:var(--deep-sea)}
+.tl-seg[data-t="wfh"]{background:var(--blue-sea)}
+.tl-seg[data-t="client"]{background:var(--noon)}
+.tl-seg[data-t="break"]{background:var(--twilight)}
+:root[data-theme="dark"] .tl-seg[data-t="break"],
+:root:not([data-theme="light"]) .tl-seg[data-t="break"]{background:#2b3d5e}
+.tl-seg[data-t="gap"]{background:transparent}
+.tl-now{
+  position:absolute; top:-4px; bottom:-4px; width:2px; background:var(--ink-heading);
+  pointer-events:none;
+}
+.tl-hours{
+  display:flex; justify-content:space-between; margin-top:5px;
+  font-family:var(--font-mono); font-size:10px; color:var(--ink-muted);
+}
+.legend{display:flex; gap:14px; flex-wrap:wrap; margin-top:11px}
+.legend div{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--ink-muted)}
+.sw{width:11px; height:11px; border-radius:2px; flex:none}
+
+/* ───────────────── prompt card ───────────────── */
+.prompt{
+  border:1px solid var(--line); border-left:4px solid var(--noon);
+  border-radius:4px; padding:15px 17px; background:var(--surface-inset);
+}
+:root[data-theme="dark"] .prompt, :root:not([data-theme="light"]) .prompt{border-left-color:var(--blue-sea)}
+.prompt .q{font-size:15px; font-weight:500; color:var(--ink-heading); margin-bottom:4px}
+.prompt .why{font-size:12px; color:var(--ink-muted); margin-bottom:13px}
+.prompt-acts{display:flex; gap:8px; flex-wrap:wrap}
+
+/* ───────────────── tables ───────────────── */
+.tbl-wrap{overflow-x:auto}
+table{width:100%; border-collapse:collapse; font-size:12.5px}
+th{
+  text-align:left; padding:0 10px 7px; border-bottom:2px solid var(--deep-sea);
+  font-family:var(--font-tech); font-size:10px; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--ink-heading); white-space:nowrap;
+}
+:root[data-theme="dark"] th, :root:not([data-theme="light"]) th{border-bottom-color:var(--blue-sea)}
+td{padding:9px 10px; border-bottom:1px solid var(--line-soft); vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.r,th.r{text-align:right}
+.tsk-t{color:var(--ink-heading); font-weight:500}
+.tsk-c{color:var(--ink-muted); font-size:11.5px}
+
+.tag{
+  display:inline-block; font-family:var(--font-mono); font-size:9.5px; font-weight:500;
+  letter-spacing:.1em; text-transform:uppercase; padding:2px 7px;
+  border:1px solid currentColor; border-radius:2px; white-space:nowrap;
+}
+.tag.done{color:var(--ok)} .tag.prog{color:var(--info)}
+.tag.hold{color:var(--warn)} .tag.none{color:var(--road)}
+:root[data-theme="dark"] .tag.none, :root:not([data-theme="light"]) .tag.none{color:var(--ink-muted)}
+
+.pill{
+  display:inline-block; font-family:var(--font-tech); font-size:10px; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; padding:3px 9px; border-radius:999px;
+}
+.pill.ok{background:var(--ok-bg); color:var(--ok)}
+.pill.warn{background:var(--warn-bg); color:var(--warn)}
+.pill.dang{background:var(--dang-bg); color:var(--dang)}
+.pill.info{background:var(--info-bg); color:var(--deep-sea)}
+:root[data-theme="dark"] .pill.info, :root:not([data-theme="light"]) .pill.info{color:var(--evening-sky)}
+
+/* ───────────────── MCP console ───────────────── */
+.mcp-asks{display:flex; flex-direction:column; gap:6px; margin-bottom:14px}
+.ask{
+  text-align:left; border:1px solid var(--line); background:var(--surface-inset);
+  border-radius:6px; padding:9px 12px; font-size:12.5px; color:var(--ink);
+  transition:border-color .15s, background .15s;
+}
+.ask:hover{border-color:var(--blue-sea)}
+.ask::before{content:'“'; color:var(--ink-muted)}
+.ask::after{content:'”'; color:var(--ink-muted)}
+
+.console{
+  background:var(--deep-sea); border-radius:6px; padding:14px 15px;
+  font-family:var(--font-mono); font-size:11.5px; line-height:1.65;
+  color:var(--iceberg); overflow-x:auto; min-height:132px;
+}
+.console .ln{white-space:pre-wrap; word-break:break-word}
+.console .k{color:var(--evening-sky)}
+.console .fn{color:#FFD9A0; font-weight:500}
+.console .st{color:#8bd48f}
+.console .cm{color:rgba(182,227,255,.5)}
+.console .gate{color:#FFAB91}
+
+/* ───────────────── summary tabs ───────────────── */
+.tabs{display:flex; gap:2px; border-bottom:1px solid var(--line)}
+.tab{
+  border:none; background:transparent; padding:9px 15px; color:var(--ink-muted);
+  font-size:12.5px; font-weight:500; border-bottom:2px solid transparent; margin-bottom:-1px;
+  transition:color .15s, border-color .15s;
+}
+.tab:hover{color:var(--ink-heading)}
+.tab[aria-selected="true"]{color:var(--ink-heading); border-bottom-color:var(--noon)}
+:root[data-theme="dark"] .tab[aria-selected="true"],
+:root:not([data-theme="light"]) .tab[aria-selected="true"]{border-bottom-color:var(--evening-sky)}
+
+.kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(128px,1fr)); gap:12px; margin-bottom:18px}
+.kpi{
+  border:1px solid var(--line); border-top:3px solid var(--deep-sea);
+  border-radius:6px; padding:11px 13px; background:var(--surface-2);
+}
+.kpi.ok{border-top-color:var(--ok)} .kpi.warn{border-top-color:var(--warn)}
+.kpi.dang{border-top-color:var(--dang)} .kpi.info{border-top-color:var(--info)}
+:root[data-theme="dark"] .kpi, :root:not([data-theme="light"]) .kpi{border-top-color:var(--blue-sea)}
+:root[data-theme="dark"] .kpi.ok, :root:not([data-theme="light"]) .kpi.ok{border-top-color:var(--ok)}
+:root[data-theme="dark"] .kpi.warn, :root:not([data-theme="light"]) .kpi.warn{border-top-color:var(--warn)}
+:root[data-theme="dark"] .kpi.dang, :root:not([data-theme="light"]) .kpi.dang{border-top-color:var(--dang)}
+.kpi .k{
+  font-family:var(--font-tech); font-size:9.5px; font-weight:600; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-muted); display:block; margin-bottom:3px;
+}
+.kpi .v{
+  font-family:var(--font-mono); font-size:21px; font-weight:500; line-height:1.15;
+  color:var(--ink-heading); font-variant-numeric:tabular-nums;
+}
+.kpi .v.txt{
+  font-family:var(--font-sans); font-size:16px; font-weight:600; line-height:1.3;
+  letter-spacing:-.01em;
+}
+.kpi .sub{font-size:11px; color:var(--ink-muted); margin-top:2px}
+
+.note{
+  font-size:12px; color:var(--ink-muted); background:var(--surface-inset);
+  border:1px solid var(--line); border-radius:4px; padding:10px 13px;
+}
+.note b{color:var(--ink-heading); font-weight:600}
+
+/* gap / spec callouts */
+.gaps{display:flex; flex-direction:column; gap:10px}
+.gap{
+  display:grid; grid-template-columns:auto minmax(0,1fr); gap:12px; align-items:start;
+  border:1px solid var(--line); border-left:4px solid var(--warn);
+  border-radius:4px; padding:12px 15px; background:var(--warn-bg);
+}
+.gap .n{
+  font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--warn);
+  padding-top:1px;
+}
+.gap .t{font-weight:600; color:var(--ink-heading); font-size:13px; margin-bottom:2px}
+.gap .d{font-size:12.5px; color:var(--ink); line-height:1.55}
+:root[data-theme="dark"] .gap .d, :root:not([data-theme="light"]) .gap .d{color:var(--ink)}
+
+footer.pg{padding:26px 0 30px; border-top:1px solid var(--line); margin-top:10px}
+footer.pg .meta{
+  display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap;
+  font-size:11.5px; color:var(--ink-muted);
+}
+</style>
+</head>
+<body>
+
+<div class="rule-top"></div>
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="mast-row">
+      <div class="mast-main">
+        <svg class="logo" viewBox="0 0 568.82 146.26" role="img" aria-label="Kalé Logistics">
+          <g fill="#EB4A26">
+            <polygon points="82.43 42 43.58 80.88 53.87 80.88 105.58 132.63 105.58 142.12 66.28 142.12 0 75.79 .06 75.73 0 75.67 39.64 36 82.43 36 82.43 42"></polygon>
+            <polygon points="148.06 51.31 148.11 51.26 172.5 75.67 132.8 115.4 89.3 115.4 89.3 110.11 128.92 70.46 118.41 70.46 59.69 11.69 59.69 0 96.79 0 148.06 51.31"></polygon>
+          </g>
+          <g fill="currentColor" style="color:var(--ink-heading)">
+            <path d="M540.69,85.97h-69.54l12.69-19.82h69.54l-12.69,19.82ZM506.44,115.64c-23.56,0-39.31-15.74-39.31-39.31s15.18-39.98,38.17-39.98h57.09l-12.69,19.82h-42.03c-11.78,0-19.03,7.82-19.03,19.6s7.25,20.05,19.03,20.05h51.31l-12.69,19.82h-39.87Z"></path>
+            <path d="M412.06,95.82h51.65l-12.69,19.82h-43.84c-15.18,0-25.37-10.19-25.37-25.37v-53.92h21.52v50.75c0,5.21,3.51,8.72,8.72,8.72Z"></path>
+            <path d="M350.36,48.81c-4.19-8.84-13.48-14.72-23.22-14.72s-19.25,5.89-23.45,14.72l-21.18,45.31c-6,12.91-.57,21.52,13.7,21.52h48.49l-8.71-19.82h-30.48l21.52-46.33,30.81,66.15h23.79l-31.26-66.83Z"></path>
+            <path d="M254.34,115.64l-17.1-24.69h-27.07l37.49-54.6h25.83l-24.47,34.77,31.15,44.52h-25.83ZM207.67,36.35v79.29h-21.52V36.35h21.52Z"></path>
+            <polygon points="558.83 24.72 520 28.83 529.99 16.99 568.82 12.87 558.83 24.72"></polygon>
+          </g>
+        </svg>
+        <div class="eyebrow">Prototype · Desktop widget · Local-first</div>
+        <h1>Office time tracker</h1>
+        <p class="lede">
+          A working model of the time engine, the task-context state machine and the MCP
+          surface. Drag the clock and every number recalculates from the same rules the
+          real widget would run. Nothing here is a picture of a screen.
+        </p>
+      </div>
+      <div class="mast-side">
+        <button class="theme-toggle" id="themeBtn" type="button" aria-live="polite">Dark</button>
+        <span class="eyebrow">Wed 26 Aug 2026</span>
+      </div>
+    </div>
+
+    <div class="scenarios" role="group" aria-label="Day scenario">
+      <button class="chip" type="button" data-sc="office" aria-pressed="true">
+        <b>Office day</b><span>You enter time in</span>
+      </button>
+      <button class="chip" type="button" data-sc="wfh" aria-pressed="false">
+        <b>Work from home</b><span>Same one question</span>
+      </button>
+      <button class="chip" type="button" data-sc="client" aria-pressed="false">
+        <b>Client visit</b><span>First half offsite</span>
+      </button>
+      <button class="chip" type="button" data-sc="early" aria-pressed="false">
+        <b>Early leave</b><span>00:06 shortfall</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="grid">
+
+    <!-- ══════════ LEFT — the widget ══════════ -->
+    <div class="sticky">
+      <div class="desk">
+        <div class="desk-bar">
+          <i class="dot"></i><i class="dot"></i><i class="dot"></i>
+          <span>Always on top</span>
+        </div>
+
+        <div class="widget">
+          <div class="w-hd">
+            <svg class="w-mark" viewBox="0 0 172.5 142.12" aria-hidden="true" fill="#EB4A26">
+              <polygon points="82.43 42 43.58 80.88 53.87 80.88 105.58 132.63 105.58 142.12 66.28 142.12 0 75.79 .06 75.73 0 75.67 39.64 36 82.43 36 82.43 42"></polygon>
+              <polygon points="148.06 51.31 148.11 51.26 172.5 75.67 132.8 115.4 89.3 115.4 89.3 110.11 128.92 70.46 118.41 70.46 59.69 11.69 59.69 0 96.79 0 148.06 51.31"></polygon>
+            </svg>
+            <h4>Time tracker</h4>
+            <span class="w-pin">Pinned</span>
+          </div>
+
+          <div class="w-bd">
+            <div class="w-state">
+              <i class="w-dot on" id="wDot"></i>
+              <b id="wState">Working</b>
+              <span class="w-loc" id="wLoc">Office</span>
+            </div>
+
+            <dl class="w-rows" id="wRows"></dl>
+
+            <div class="w-prog">
+              <div class="w-track">
+                <div class="w-fill" id="wFill" style="width:0%"></div>
+                <div class="w-mark-half" id="wHalf"></div>
+              </div>
+              <div class="w-scale">
+                <span>0:00</span><span id="wHalfLbl">Half 04:15</span><span id="wFullLbl">Full 08:30</span>
+              </div>
+            </div>
+
+            <div class="w-task">
+              <span class="lbl">Current task</span>
+              <div class="ttl" id="wTask">—</div>
+              <div class="meta"><span id="wTaskCust">—</span><span id="wTaskDur">—</span></div>
+            </div>
+
+            <div class="w-acts">
+              <button class="pri" type="button">Continue</button>
+              <button type="button">New task</button>
+              <button type="button">Break</button>
+            </div>
+
+            <div class="w-ft">
+              <div><span class="k">Today</span><span class="v" id="wToday">00:00</span></div>
+              <div><span class="k">Week</span><span class="v" id="wWeek">00:00</span></div>
+              <div><span class="k">Month</span><span class="v" id="wMonth">00:00</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toasts" id="toasts"></div>
+    </div>
+
+    <!-- ══════════ RIGHT — the simulation ══════════ -->
+    <div class="stack">
+
+      <section class="card">
+        <div class="card-hd">
+          <h3>Drive the day</h3>
+          <span class="eyebrow" id="simScenario">Office day</span>
+        </div>
+        <div class="card-bd">
+          <div class="sim-top">
+            <div class="sim-clock">
+              <span class="eyebrow">Current time</span>
+              <span class="big" id="simBig">09:10</span>
+            </div>
+            <div class="sim-btns">
+              <button class="btn" type="button" id="btnReset">Reset to start</button>
+              <button class="btn pri" type="button" id="btnPlay">Play day</button>
+            </div>
+          </div>
+
+          <input type="range" id="simRange" min="480" max="1200" step="1" value="550"
+                 aria-label="Time of day">
+
+          <div class="tl">
+            <div class="tl-bar" id="tlBar"></div>
+            <div class="tl-hours">
+              <span>08:00</span><span>11:00</span><span>14:00</span><span>17:00</span><span>20:00</span>
+            </div>
+            <div class="legend">
+              <div><i class="sw" style="background:#081F4B"></i>Office</div>
+              <div><i class="sw" style="background:#3B97FF"></i>Work from home</div>
+              <div><i class="sw" style="background:#EB4A26"></i>Client location</div>
+              <div><i class="sw" style="background:#ECECE4;border:1px solid #d8d8cf"></i>Break — not counted</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <h3>What the widget asks, and when</h3>
+          <span class="eyebrow">Rule §24</span>
+        </div>
+        <div class="card-bd">
+          <div class="prompt">
+            <div class="q" id="pQ">—</div>
+            <div class="why" id="pWhy">—</div>
+            <div class="prompt-acts" id="pActs"></div>
+          </div>
+          <div class="note" style="margin-top:13px">
+            <b>Capture once, ask only when required.</b> The clock is asked about
+            <b id="askCount">once</b> — your start time, in the morning. After that it runs by
+            itself: there is no start button, no stop button, and no second question about hours.
+            Everything below is about <em>tasks</em>, and only fires when something actually changed.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <h3>Today's activities</h3>
+          <span class="eyebrow" id="tskCount">—</span>
+        </div>
+        <div class="card-bd">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Activity ID</th><th>Task</th><th>Start</th><th>End</th>
+                  <th class="r">Duration</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tskBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <h3>Ask an AI agent instead</h3>
+          <span class="eyebrow">MCP surface</span>
+        </div>
+        <div class="card-bd">
+          <div class="mcp-asks" id="mcpAsks"></div>
+          <div class="console" id="mcpOut"><div class="ln cm">Pick a phrase above to see the tool call it maps to.</div></div>
+          <div class="note" style="margin-top:13px">
+            The agent never reaches HRMS. It calls local tools over MCP, the write lands in the
+            local encrypted store, and anything leaving the machine waits behind an explicit
+            confirmation.
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd"><h3>Summaries</h3></div>
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" aria-selected="true" data-tab="day">Day</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="week">Week</button>
+          <button class="tab" role="tab" aria-selected="false" data-tab="month">Month</button>
+        </div>
+        <div class="card-bd">
+          <div class="kpis" id="sumKpis"></div>
+          <div id="sumExtra"></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-hd">
+          <h3>What this prototype does not settle</h3>
+          <span class="eyebrow">Open decisions</span>
+        </div>
+        <div class="card-bd">
+          <div class="gaps">
+            <div class="gap">
+              <span class="n">01</span>
+              <div>
+                <div class="t">Stack is still open</div>
+                <div class="d">Deliberately. The engine above is plain logic — it ports to WPF, Electron or anything else unchanged. Pick the shell once you have clicked the flows.</div>
+              </div>
+            </div>
+            <div class="gap">
+              <span class="n">02</span>
+              <div>
+                <div class="t">HRMS sync has no contract</div>
+                <div class="d">Every requirement for it is conditional on an API nobody has seen. Designing the protocol now produces guesses. The local store is built sync-ready; the transport waits.</div>
+              </div>
+            </div>
+            <div class="gap">
+              <span class="n">03</span>
+              <div>
+                <div class="t">Time out needs a fallback</div>
+                <div class="d">You declare your start; the day closes when you hit Complete day. But people go home without clicking. Proposed: on next launch the widget asks what time you left the open day — never guesses it silently.</div>
+              </div>
+            </div>
+            <div class="gap">
+              <span class="n">04</span>
+              <div>
+                <div class="t">A tool that measures people is political</div>
+                <div class="d">Even at pilot scale, who can see the data is a question to answer before rollout, not after. Local-first is the right default; it is not the whole answer.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <footer class="pg">
+    <div class="meta">
+      <span>Prototype · not production code · numbers are simulated</span>
+      <span>Confidential · Internal use only</span>
+    </div>
+  </footer>
+</div>
+
+<div class="rule-bottom"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ═══════════ configuration — §1, all values user-set ═══════════ */
+  var CFG = { halfDay:255, fullDay:510, required:510, nudge:60 };
+
+  /* ═══════════ scenarios ═══════════ */
+  var SC = {
+    office:{
+      label:'Office day', timeIn:550, timeInSrc:'Entered by you — 09:10',
+      wfhAsked:true,
+      segs:[{t:'office',s:550,e:1080}],
+      tasks:[
+        {id:'ACT-20260826-000101',ttl:'API performance optimization',cust:'Galaxy',s:600,e:750,st:'Completed'},
+        {id:'ACT-20260826-000102',ttl:'Sprint review meeting',cust:'Internal',s:750,e:795,st:'Completed'},
+        {id:'ACT-20260826-000103',ttl:'Database migration',cust:'ABC Logistics',s:840,e:1080,st:'In progress'}
+      ]
+    },
+    wfh:{
+      label:'Work from home', timeIn:525, timeInSrc:'Entered by you — 08:45',
+      wfhAsked:true,
+      segs:[{t:'wfh',s:525,e:780},{t:'break',s:780,e:825},{t:'wfh',s:825,e:1080}],
+      tasks:[
+        {id:'ACT-20260826-000201',ttl:'CSP header remediation',cust:'Galaxy',s:525,e:780,st:'Completed'},
+        {id:'ACT-20260826-000202',ttl:'Tenant isolation review',cust:'LPMS',s:825,e:1080,st:'In progress'}
+      ]
+    },
+    client:{
+      label:'Client visit', timeIn:540, timeInSrc:'Entered by you — 09:00',
+      wfhAsked:true, note:'Client visit in the first half; reached office at 2:00 PM.',
+      segs:[{t:'client',s:540,e:810},{t:'break',s:810,e:840},{t:'office',s:840,e:1110}],
+      tasks:[
+        {id:'ACT-20260826-000301',ttl:'Onsite integration workshop',cust:'ABC Logistics',s:540,e:810,st:'Completed'},
+        {id:'ACT-20260826-000302',ttl:'Workshop follow-up actions',cust:'ABC Logistics',s:840,e:1110,st:'In progress'}
+      ]
+    },
+    early:{
+      label:'Early leave', timeIn:550, timeInSrc:'Entered by you — 09:10',
+      wfhAsked:true,
+      segs:[{t:'office',s:550,e:810},{t:'break',s:810,e:840},{t:'office',s:840,e:1084}],
+      tasks:[
+        {id:'ACT-20260826-000401',ttl:'Query tuning — invoice search',cust:'Galaxy',s:570,e:810,st:'Completed'},
+        {id:'ACT-20260826-000402',ttl:'Release smoke checks',cust:'Internal',s:840,e:1084,st:'Completed'}
+      ]
+    }
+  };
+
+  var cur='office', now=550, playing=null, tab='day';
+
+  /* ═══════════ time helpers ═══════════ */
+  function hhmm(m){
+    m=Math.max(0,Math.round(m));
+    var h=Math.floor(m/60), n=m%60;
+    return (h<10?'0':'')+h+':'+(n<10?'0':'')+n;
+  }
+  function clock(m){
+    var h=Math.floor(m/60), n=Math.round(m%60), ap=h>=12?'PM':'AM', h12=h%12; if(h12===0)h12=12;
+    return (h12<10?'0':'')+h12+':'+(n<10?'0':'')+n+' '+ap;
+  }
+  function clock24(m){ return hhmm(m); }
+
+  /* ═══════════ the engine — one source of truth ═══════════ */
+  function compute(){
+    var s=SC[cur], worked=0, onBreak=false, loc=null, dayEnd=0;
+    for(var i=0;i<s.segs.length;i++){
+      var g=s.segs[i];
+      if(g.e>dayEnd) dayEnd=g.e;
+      var ov=Math.min(now,g.e)-g.s;
+      if(ov>0){
+        if(g.t==='break'){ if(now>=g.s&&now<g.e) onBreak=true; }
+        else worked+=ov;
+      }
+      if(now>=g.s&&now<g.e&&g.t!=='break') loc=g.t;
+    }
+    var ended=now>=dayEnd;
+    var remaining=Math.max(0,CFG.fullDay-worked);
+    var overtime=Math.max(0,worked-CFG.fullDay);
+    var shortfall=ended?Math.max(0,CFG.fullDay-worked):0;
+    return {
+      s:s, worked:worked, onBreak:onBreak, loc:loc, ended:ended, dayEnd:dayEnd,
+      remaining:remaining, overtime:overtime, shortfall:shortfall,
+      expectedEnd:now+remaining,
+      status: worked>=CFG.fullDay?'Full day':(worked>=CFG.halfDay?'Half day':'In progress')
+    };
+  }
+
+  function currentTask(){
+    var t=SC[cur].tasks, last=null;
+    for(var i=0;i<t.length;i++){
+      if(now>=t[i].s && now<t[i].e) return t[i];
+      if(now>=t[i].e) last=t[i];
+    }
+    return last;
+  }
+
+  /* ═══════════ widget render ═══════════ */
+  var LOCN={office:'Office',wfh:'Home',client:'Client'};
+  function renderWidget(c){
+    var dot=document.getElementById('wDot'), st=document.getElementById('wState');
+    if(c.ended){ dot.className='w-dot off'; st.textContent='Day complete'; }
+    else if(c.onBreak){ dot.className='w-dot brk'; st.textContent='On break'; }
+    else { dot.className='w-dot on'; st.textContent='Working'; }
+
+    var locEl=document.getElementById('wLoc');
+    var lastLoc=c.loc||(function(){ var g=c.s.segs.filter(function(x){return x.t!=='break'}); return g.length?g[g.length-1].t:'office'; })();
+    locEl.textContent=LOCN[lastLoc]||'Office';
+
+    var rows=[
+      ['Time in', clock(c.s.timeIn), ''],
+      ['Worked', hhmm(c.worked), 'hi'],
+      ['Required', hhmm(CFG.fullDay), '']
+    ];
+    if(c.ended){
+      rows.push(['Time out', clock(c.dayEnd), '']);
+      if(c.overtime>0) rows.push(['Overtime', '+'+hhmm(c.overtime), 'pos']);
+      if(c.shortfall>0) rows.push(['Shortfall', '−'+hhmm(c.shortfall), 'neg']);
+      if(c.overtime===0&&c.shortfall===0) rows.push(['Balance','00:00','']);
+    }else{
+      rows.push(['Remaining', hhmm(c.remaining), '']);
+      rows.push(['Expected end', clock(c.expectedEnd), '']);
+    }
+    document.getElementById('wRows').innerHTML=rows.map(function(r){
+      return '<div class="w-row"><dt>'+r[0]+'</dt><dd class="'+r[2]+'">'+r[1]+'</dd></div>';
+    }).join('');
+
+    var pct=Math.min(100,(c.worked/CFG.fullDay)*100);
+    var fill=document.getElementById('wFill');
+    fill.style.width=pct+'%';
+    fill.className='w-fill'+(c.worked>=CFG.fullDay?' done':'');
+    document.getElementById('wHalf').style.left=((CFG.halfDay/CFG.fullDay)*100)+'%';
+    document.getElementById('wHalfLbl').textContent='Half '+hhmm(CFG.halfDay);
+    document.getElementById('wFullLbl').textContent='Full '+hhmm(CFG.fullDay);
+
+    var t=currentTask();
+    document.getElementById('wTask').textContent=t?t.ttl:'No task started';
+    document.getElementById('wTaskCust').textContent=t?t.cust:'—';
+    document.getElementById('wTaskDur').textContent=t?hhmm(Math.max(0,Math.min(now,t.e)-t.s)):'—';
+
+    document.getElementById('wToday').textContent=hhmm(c.worked);
+    document.getElementById('wWeek').textContent=hhmm(1935+c.worked);
+    document.getElementById('wMonth').textContent=hhmm(8540+c.worked);
+  }
+
+  /* ═══════════ timeline ═══════════ */
+  function renderTimeline(c){
+    var D0=480, D1=1200, span=D1-D0, html='', cursor=D0;
+    c.s.segs.forEach(function(g){
+      if(g.s>cursor) html+='<div class="tl-seg" data-t="gap" style="flex:0 0 '+(((g.s-cursor)/span)*100)+'%"></div>';
+      var future=g.s>=now;
+      var partial=now>g.s&&now<g.e;
+      if(partial){
+        html+='<div class="tl-seg" data-t="'+g.t+'" style="flex:0 0 '+(((now-g.s)/span)*100)+'%"></div>';
+        html+='<div class="tl-seg future" data-t="'+g.t+'" style="flex:0 0 '+(((g.e-now)/span)*100)+'%"></div>';
+      }else{
+        html+='<div class="tl-seg'+(future?' future':'')+'" data-t="'+g.t+'" style="flex:0 0 '+(((g.e-g.s)/span)*100)+'%"></div>';
+      }
+      cursor=g.e;
+    });
+    if(cursor<D1) html+='<div class="tl-seg" data-t="gap" style="flex:1 1 auto"></div>';
+    var bar=document.getElementById('tlBar');
+    bar.innerHTML=html;
+    bar.style.position='relative';
+    var mk=document.createElement('div');
+    mk.className='tl-now';
+    mk.style.left=(((now-D0)/span)*100)+'%';
+    bar.appendChild(mk);
+  }
+
+  /* ═══════════ prompts — §2, §7, §8, §23 ═══════════ */
+  function renderPrompt(c){
+    var q,why,acts,t=currentTask();
+    if(now<c.s.timeIn){
+      q='Start at '+clock24(c.s.timeIn)+'?';
+      why='Pre-filled with your default start time from setup — §1. Office or home, same question, and today it is one tap. Change it only if today was different. Nothing about the clock is asked again after this.';
+      acts=['Yes, start at '+clock24(c.s.timeIn),'Change time','Working from home today'];
+    }else if(cur==='client'&&now>=840&&now<870){
+      q='Your office time in is 02:00 PM. What happened in the first half?';
+      why='Second-half office arrival triggers a note request — §5. The client segment before it is already recorded.';
+      acts=['Client visit — add note','Correct the time'];
+    }else if(c.ended){
+      q='Review today before you finish?';
+      why='End-of-day review — §23. Flags anything incomplete before it can be submitted.';
+      acts=['Review '+SC[cur].tasks.length+' activities','Complete day'];
+    }else if(t&&now>=t.s+CFG.nudge&&((now-t.s)%CFG.nudge)<3){
+      q='Still on '+t.ttl+'?';
+      why='Hourly nudge — §8, and it is configurable. One tap to continue; the customer is never re-asked.';
+      acts=['Yes, continue','Something else','Break'];
+    }else{
+      q='Nothing to ask right now.';
+      why='The task is running and the clock is counting. This is the state the widget should be in most of the day.';
+      acts=[];
+    }
+    document.getElementById('pQ').textContent=q;
+    document.getElementById('pWhy').textContent=why;
+    document.getElementById('pActs').innerHTML=acts.map(function(a,i){
+      return '<button class="btn'+(i===0?' pri':'')+'" type="button">'+a+'</button>';
+    }).join('');
+    document.getElementById('askCount').textContent='exactly once';
+  }
+
+  /* ═══════════ toasts — §22 ═══════════ */
+  function renderToasts(c){
+    var out=[];
+    if(c.worked>=CFG.halfDay)
+      out.push(['ok','Half day complete','Reached at '+clock(c.s.timeIn+CFG.halfDay+breakBefore(c,CFG.halfDay))]);
+    if(c.worked>=CFG.fullDay)
+      out.push(['ok','Full day complete','Anything beyond this counts as overtime.']);
+    else if(c.worked>=CFG.halfDay)
+      out.push(['','You need '+hhmm(c.remaining)+' to complete full day','Expected end '+clock(c.expectedEnd)]);
+    if(c.ended&&c.shortfall>0)
+      out.push(['warn','Short by '+hhmm(c.shortfall),'Full day needs '+hhmm(CFG.fullDay)+'; you worked '+hhmm(c.worked)+'.']);
+    if(c.ended)
+      out.push(['','Review today’s timesheet',''+SC[cur].tasks.length+' activities are ready to check.']);
+    document.getElementById('toasts').innerHTML=out.slice(0,3).map(function(o){
+      return '<div class="toast '+o[0]+'"><div><div class="t">'+o[1]+'</div><div class="s">'+o[2]+'</div></div></div>';
+    }).join('');
+  }
+  function breakBefore(c,mins){
+    var acc=0,br=0;
+    for(var i=0;i<c.s.segs.length;i++){
+      var g=c.s.segs[i];
+      if(g.t==='break'){ if(acc<mins) br+=(g.e-g.s); continue; }
+      acc+=(g.e-g.s);
+      if(acc>=mins) break;
+    }
+    return br;
+  }
+
+  /* ═══════════ task table ═══════════ */
+  var STC={'Completed':'done','In progress':'prog','On hold':'hold','Not started':'none'};
+  function renderTasks(){
+    var rows=SC[cur].tasks.map(function(t){
+      var live=now>=t.s&&now<t.e, started=now>=t.s;
+      var end=started?(live?now:t.e):t.s;
+      var st=!started?'Not started':(live?'In progress':t.st);
+      var dur=started?hhmm(end-t.s):'—';
+      return '<tr>'+
+        '<td class="mono" style="font-size:10.5px;color:var(--ink-muted)">'+t.id+'</td>'+
+        '<td><div class="tsk-t">'+t.ttl+'</div><div class="tsk-c">'+t.cust+'</div></td>'+
+        '<td class="mono">'+clock24(t.s)+'</td>'+
+        '<td class="mono">'+(live?'running':(started?clock24(t.e):'—'))+'</td>'+
+        '<td class="r mono">'+dur+'</td>'+
+        '<td><span class="tag '+STC[st]+'">'+st+'</span></td>'+
+      '</tr>';
+    });
+    document.getElementById('tskBody').innerHTML=rows.join('');
+    var done=SC[cur].tasks.filter(function(t){return now>=t.e}).length;
+    document.getElementById('tskCount').textContent=done+' of '+SC[cur].tasks.length+' complete';
+  }
+
+  /* ═══════════ MCP ═══════════ */
+  var ASKS=[
+    {say:'I worked on the Galaxy API performance issue from 10 AM to 12:30 PM.',
+     out:function(){return [
+       ['cm','// agent resolves customer from your existing task history'],
+       ['fn','timesheet.log_activity','{ title: "API performance issue", customer: "Galaxy",'],
+       ['ln','                          start: "10:00", end: "12:30" }'],
+       ['st','→ ACT-20260826-000101 created · 02:30 · stored locally'],
+       ['cm','// nothing left the machine']
+     ]}},
+    {say:'Continue this task for another two hours.',
+     out:function(){var t=currentTask();return [
+       ['fn','timesheet.get_current_context','()'],
+       ['st','→ { task: "'+(t?t.ttl:'—')+'", customer: "'+(t?t.cust:'—')+'", status: "In progress" }'],
+       ['fn','timesheet.extend_current','{ minutes: 120 }'],
+       ['st','→ end moved to '+(t?clock24(Math.min(1200,t.e+120)):'—')+' · no re-entry required'],
+       ['cm','// §18 — the agent knew the task; you did not restate it']
+     ]}},
+    {say:'I completed the current task and started working on database migration.',
+     out:function(){return [
+       ['fn','timesheet.complete_current','{ status: "Completed" }'],
+       ['st','→ ACT-20260826-000102 closed at '+clock24(now)],
+       ['fn','timesheet.start_activity','{ title: "Database migration", customer: "ABC Logistics" }'],
+       ['st','→ ACT-20260826-000103 opened · customer carried over'],
+       ['cm','// two writes, one sentence, zero forms']
+     ]}},
+    {say:'Submit today to HRMS.',
+     out:function(){var c=compute();return [
+       ['fn','timesheet.get_day_summary','{ date: "2026-08-26" }'],
+       ['st','→ worked '+hhmm(c.worked)+' · '+SC[cur].tasks.length+' activities · status '+c.status],
+       ['gate','⚠ hrms.submit_day requires explicit user confirmation'],
+       ['cm','// the agent cannot pass this gate on your behalf — §17'],
+       ['ln','   awaiting confirmation in the widget…']
+     ]}}
+  ];
+  function renderMcpAsks(){
+    document.getElementById('mcpAsks').innerHTML=ASKS.map(function(a,i){
+      return '<button class="ask" type="button" data-i="'+i+'">'+a.say+'</button>';
+    }).join('');
+  }
+  function runAsk(i){
+    var lines=ASKS[i].out();
+    document.getElementById('mcpOut').innerHTML=lines.map(function(l){
+      if(l[0]==='fn') return '<div class="ln"><span class="fn">'+l[1]+'</span><span class="k">'+l[2]+'</span></div>';
+      if(l[0]==='st') return '<div class="ln st">'+l[1]+'</div>';
+      if(l[0]==='cm') return '<div class="ln cm">'+l[1]+'</div>';
+      if(l[0]==='gate') return '<div class="ln gate">'+l[1]+'</div>';
+      return '<div class="ln">'+l[1]+'</div>';
+    }).join('');
+  }
+
+  /* ═══════════ summaries ═══════════ */
+  function renderSummary(c){
+    var k=[],extra='';
+    if(tab==='day'){
+      k=[
+        ['Time in',clock(c.s.timeIn),c.s.timeInSrc,''],
+        ['Worked',hhmm(c.worked),'Required '+hhmm(CFG.fullDay),c.worked>=CFG.fullDay?'ok':''],
+        ['Status',c.status,c.ended?'Day closed':'Still running',c.status==='Full day'?'ok':(c.status==='Half day'?'info':'')],
+        [c.shortfall>0?'Shortfall':'Overtime',
+         c.shortfall>0?hhmm(c.shortfall):hhmm(c.overtime),
+         c.shortfall>0?'Below full day':'Beyond full day',
+         c.shortfall>0?'dang':(c.overtime>0?'ok':'')],
+        ['Activities',String(SC[cur].tasks.length),
+         SC[cur].tasks.filter(function(t){return now>=t.e}).length+' complete',''],
+        ['Customers',String(uniq(SC[cur].tasks.map(function(t){return t.cust})).length),'On this day','']
+      ];
+      if(SC[cur].note) extra='<div class="note"><b>Note recorded.</b> '+SC[cur].note+'</div>';
+    }else if(tab==='week'){
+      k=[
+        ['Required','42:30','5 working days',''],
+        ['Worked','42:55','Across office and home','ok'],
+        ['Balance','+00:25','Carried forward','ok'],
+        ['Full days','5','No half days',''],
+        ['From home','2','Mon, Thu','info'],
+        ['Client visits','1','ABC Logistics','info']
+      ];
+      extra='<div class="note"><b>Customer-wise.</b> Galaxy 18:20 · ABC Logistics 14:05 · LPMS 06:40 · Internal 03:50</div>';
+    }else{
+      k=[
+        ['Working days','21','August 2026',''],
+        ['Required','178:30','At 08:30 a day',''],
+        ['Worked','180:10','Month to date','ok'],
+        ['Overtime','02:20','Net of shortfalls','ok'],
+        ['Shortfall','00:40','Across 2 days','warn'],
+        ['Activities','96','88 complete','']
+      ];
+      extra='<div class="note"><b>Customer-wise.</b> Galaxy 74:15 · ABC Logistics 52:30 · LPMS 31:20 · Internal 22:05</div>';
+    }
+    document.getElementById('sumKpis').innerHTML=k.map(function(x){
+      var isText=/[A-Za-z]{3}/.test(x[1]);
+      return '<div class="kpi '+x[3]+'"><span class="k">'+x[0]+'</span>'+
+             '<div class="v'+(isText?' txt':'')+'">'+x[1]+'</div>'+
+             '<div class="sub">'+x[2]+'</div></div>';
+    }).join('');
+    document.getElementById('sumExtra').innerHTML=extra;
+  }
+  function uniq(a){var o={},r=[];a.forEach(function(x){if(!o[x]){o[x]=1;r.push(x)}});return r}
+
+  /* ═══════════ paint ═══════════ */
+  function paint(){
+    var c=compute();
+    document.getElementById('simBig').textContent=clock24(now);
+    document.getElementById('simRange').value=now;
+    document.getElementById('simScenario').textContent=SC[cur].label;
+    renderWidget(c); renderTimeline(c); renderPrompt(c);
+    renderToasts(c); renderTasks(); renderSummary(c);
+  }
+
+  /* ═══════════ wiring ═══════════ */
+  document.getElementById('simRange').addEventListener('input',function(e){
+    now=+e.target.value; stop(); paint();
+  });
+  function stop(){
+    if(playing){ clearInterval(playing); playing=null;
+      document.getElementById('btnPlay').textContent='Play day'; }
+  }
+  document.getElementById('btnPlay').addEventListener('click',function(){
+    if(playing){ stop(); return; }
+    this.textContent='Pause';
+    var self=this;
+    playing=setInterval(function(){
+      now+=4;
+      if(now>=1200){ now=1200; stop(); }
+      paint();
+    },40);
+  });
+  document.getElementById('btnReset').addEventListener('click',function(){
+    stop(); now=SC[cur].timeIn; paint();
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.chip'),function(x){
+        x.setAttribute('aria-pressed', x===b ? 'true':'false');
+      });
+      cur=b.dataset.sc; stop(); now=SC[cur].timeIn; paint();
+    });
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(b){
+    b.addEventListener('click',function(){
+      Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(x){
+        x.setAttribute('aria-selected', x===b ? 'true':'false');
+      });
+      tab=b.dataset.tab; paint();
+    });
+  });
+
+  document.getElementById('mcpAsks').addEventListener('click',function(e){
+    var b=e.target.closest('.ask'); if(b) runAsk(+b.dataset.i);
+  });
+
+  /* theme */
+  var tBtn=document.getElementById('themeBtn');
+  function sysDark(){ return window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches; }
+  var mode=null;
+  try{ mode=localStorage.getItem('tt-theme'); }catch(_){}
+  if(mode) document.documentElement.setAttribute('data-theme',mode);
+  function label(){
+    var d = mode ? mode==='dark' : sysDark();
+    tBtn.textContent = d ? 'Light' : 'Dark';
+  }
+  label();
+  tBtn.addEventListener('click',function(){
+    var d = mode ? mode==='dark' : sysDark();
+    mode = d ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme',mode);
+    try{ localStorage.setItem('tt-theme',mode); }catch(_){}
+    label();
+  });
+
+  renderMcpAsks();
+  paint();
+})();
+</script>
+
+</body>
+</html>
