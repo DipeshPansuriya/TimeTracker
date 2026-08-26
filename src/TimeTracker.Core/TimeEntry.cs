@@ -42,6 +42,22 @@ public static class TimeEntry
     private static readonly string[] Formats =
         ["HH:mm", "H:mm", "hh:mm tt", "h:mm tt", "hhmm", "HHmm"];
 
+    /// <summary>
+    /// True when a claimed start time is far enough in the past to be worth querying.
+    /// </summary>
+    /// <remarks>
+    /// Not a validation rule — starting at 07:00 and opening the widget at 16:00 is perfectly
+    /// normal, and refusing it would be wrong. It exists so a start time that arrives by
+    /// accident is <i>visible</i> rather than silently becoming the day's record. A wrong
+    /// Time In poisons every figure for the day and every rollup containing it, and the whole
+    /// point of the widget is that nobody re-checks these numbers by hand.
+    /// </remarks>
+    public static bool LooksSuspicious(TimeOnly start, DateTime now, out TimeSpan agesAgo)
+    {
+        agesAgo = now.TimeOfDay - start.ToTimeSpan();
+        return agesAgo > TimeSpan.FromHours(4);
+    }
+
     /// <summary>Seconds are dropped: a timesheet claiming 09:00:37 implies a precision nobody has.</summary>
     private static bool Accept(ref TimeOnly value)
     {

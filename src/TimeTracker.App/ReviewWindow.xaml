@@ -56,25 +56,39 @@
                     </Border>
                 </UniformGrid>
 
-                <TextBlock Text="ACTIVITIES" Style="{StaticResource DialogLabel}"/>
+                <Grid Margin="0,0,0,2">
+                    <TextBlock Text="ACTIVITIES  ·  CLICK A ROW TO EDIT"
+                               Style="{StaticResource DialogLabel}"/>
+                    <Button Content="Edit time in / out" Click="OnEditHours"
+                            HorizontalAlignment="Right" Margin="0,-4,0,0"
+                            Style="{StaticResource DialogGhost}" Padding="10,3" FontSize="11"/>
+                </Grid>
                 <ItemsControl x:Name="TaskList" Margin="0,0,0,16">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Grid Margin="0,0,0,6">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="{Binding Title}" Foreground="#081F4B"
-                                               FontSize="13" FontFamily="Segoe UI"/>
-                                    <TextBlock Text="{Binding Customer}" Foreground="#585858"
-                                               FontSize="11" FontFamily="Segoe UI"/>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="{Binding Duration}"
-                                           Foreground="#081F4B" FontSize="13"
-                                           FontFamily="Consolas" VerticalAlignment="Center"/>
-                            </Grid>
+                            <Button Click="OnEditActivity" Style="{StaticResource RowButton}"
+                                    ToolTip="Edit this activity">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="{Binding Title}" Foreground="#081F4B"
+                                                   FontSize="13" FontFamily="Segoe UI"/>
+                                        <TextBlock Text="{Binding Customer}" Foreground="#585858"
+                                                   FontSize="11" FontFamily="Segoe UI"/>
+                                    </StackPanel>
+                                    <TextBlock Grid.Column="1" Text="{Binding Times}"
+                                               Foreground="#585858" FontSize="12"
+                                               FontFamily="Consolas" VerticalAlignment="Center"
+                                               Margin="0,0,14,0"/>
+                                    <TextBlock Grid.Column="2" Text="{Binding Duration}"
+                                               Foreground="#081F4B" FontSize="13"
+                                               FontFamily="Consolas" VerticalAlignment="Center"/>
+                                </Grid>
+                            </Button>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>

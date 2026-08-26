@@ -188,6 +188,69 @@ public sealed class TimesheetTools(TimesheetRepository repo)
         return $"Closed {current.Id}: {current.Title} as {parsed} at {DateTime.Now:HH\\:mm}.";
     }
 
+    [McpServerTool(Name = "amend_activity")]
+    [Description("Correct an already-recorded activity: its title, customer, times or " +
+                 "status. Omit anything you do not want to change. Use list_activities " +
+                 "first to get the activity id.")]
+    public string AmendActivity(
+        [Description("Activity id, e.g. ACT-20260826-000001.")] string activityId,
+        [Description("New task title. Omit to leave it.")] string? title = null,
+        [Description("New customer. Omit to leave it.")] string? customer = null,
+        [Description("New start time, e.g. 10:00. Omit to leave it.")] string? start = null,
+        [Description("New end time, e.g. 12:30. Omit to leave it.")] string? end = null,
+        [Description("Completed, InProgress, OnHold, Blocked or Cancelled. Omit to leave it.")]
+        string? status = null)
+    {
+        if (!ActivityId.TryParse(activityId, out var id))
+            return $"'{activityId}' is not an activity id. They look like ACT-20260826-000001.";
+
+        DateTime? newStart = null, newEnd = null;
+        if (start is not null)
+        {
+            if (!TimeEntry.TryParse(start, out var s)) return $"'{start}' is not a time.";
+            newStart = DateTime.Today.Add(s.ToTimeSpan());
+        }
+        if (end is not null)
+        {
+            if (!TimeEntry.TryParse(end, out var e)) return $"'{end}' is not a time.";
+            newEnd = DateTime.Today.Add(e.ToTimeSpan());
+        }
+
+        ActivityStatus? newStatus = null;
+        if (status is not null)
+        {
+            if (!Enum.TryParse<ActivityStatus>(status, ignoreCase: true, out var parsed))
+                return $"'{status}' is not a status. Use Completed, InProgress, OnHold, " +
+                       "Blocked or Cancelled.";
+            newStatus = parsed;
+        }
+
+        lock (Gate)
+        {
+            var log = repo.LoadActivities(Today);
+
+            try
+            {
+                log = log.Amend(id, title, customer, newStart, newEnd, newStatus);
+            }
+            catch (ArgumentException ex)
+            {
+                // Surfaced as text, not an exception: the agent should be able to explain
+                // the problem to the user and retry, not fail the whole conversation.
+                return $"Could not amend {activityId}: {ex.Message}";
+            }
+
+            repo.SaveActivities(log);
+            var amended = log.Activities.First(a => a.Id == id);
+
+            return $"Amended {id}: {amended.Title} for " +
+                   $"{amended.Customer ?? "no customer"}, {amended.Start:HH\\:mm}-" +
+                   $"{(amended.End is { } e2 ? e2.ToString("HH\\:mm") : "running")}, " +
+                   $"{amended.Status}. The id is unchanged, so this updates the existing " +
+                   "record rather than adding another.";
+        }
+    }
+
     [McpServerTool(Name = "get_period_summary")]
     [Description("Weekly or monthly totals: required and worked hours, balance, full/half " +
                  "days, WFH and client-visit days, and customer-wise hours.")]

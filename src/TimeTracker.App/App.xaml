@@ -81,12 +81,160 @@
             </Setter>
         </Style>
 
+        <!-- Title-bar affordance. Borderless so it reads as chrome rather than an action,
+             but it is a real Button so it takes keyboard focus and swallows its own click
+             instead of letting the window start a drag. -->
+        <Style x:Key="TitleBarButton" TargetType="Button">
+            <Setter Property="Foreground" Value="#AA76CBFF"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="3" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2476CBFF"/>
+                                <Setter Property="Foreground" Value="#76CBFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- A list row that happens to be clickable. Flat until hovered, so the list reads
+             as data rather than a column of buttons, but it is a real Button so it takes
+             keyboard focus and announces itself. -->
+        <Style x:Key="RowButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#F1F1EC"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="8,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F3F7FC"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F3F7FC"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource Ghost}">
             <Setter Property="Foreground" Value="#081F4B"/>
             <Setter Property="Background" Value="#76CBFF"/>
             <Setter Property="BorderBrush" Value="#76CBFF"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
+
+        <!-- The widget footer totals double as the way into the report. They looked like
+             labels before, which is why nobody could find the weekly view. -->
+        <Style x:Key="FooterButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="4,3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                CornerRadius="4" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Left"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#2476CBFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Report surfaces. Section labels are the technical voice: uppercase, tracked. -->
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#081F4B"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
+        </Style>
+
+        <Style x:Key="PeriodTab" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="#585858"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,4,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" Background="Transparent" Padding="14,7"
+                                CornerRadius="5" BorderThickness="0,0,0,2"
+                                BorderBrush="Transparent">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#F3F7FC"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter Property="Foreground" Value="#081F4B"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#EB4A26"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- One row of a "by customer" / "by task" breakdown: name, bar, hours. The bar is
+             the fastest way to see where the time actually went. -->
+        <DataTemplate x:Key="BreakdownRow">
+            <Grid Margin="0,0,0,9">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="70"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                    <TextBlock Text="{Binding Name}" Foreground="#081F4B" FontSize="12.5"
+                               FontFamily="Segoe UI" TextTrimming="CharacterEllipsis"/>
+                    <Grid Height="6" Margin="0,4,0,0" HorizontalAlignment="Stretch">
+                        <Border Background="#F1F1EC" CornerRadius="3"/>
+                        <Border Background="#3B97FF" CornerRadius="3"
+                                HorizontalAlignment="Left" Width="{Binding BarWidth}"/>
+                    </Grid>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding Hours}" Foreground="#081F4B"
+                           FontSize="13" FontFamily="Consolas" HorizontalAlignment="Right"
+                           VerticalAlignment="Top"/>
+            </Grid>
+        </DataTemplate>
 
         <!-- Dialogs sit on the light brand ground, unlike the widget. -->
         <Style x:Key="DialogLabel" TargetType="TextBlock">

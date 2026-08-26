@@ -128,6 +128,42 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
         Refresh();
     }
 
+    /// <summary>
+    /// Corrects a recorded activity (brief S23's "[Edit]"). The activity id is preserved, so
+    /// a correction updates the HRMS record rather than arriving beside it as a duplicate.
+    /// </summary>
+    public void AmendActivity(
+        ActivityId id, string title, string? customer, string? description,
+        TimeOnly start, TimeOnly? end, ActivityStatus status)
+    {
+        var date = _log.Date.ToDateTime(TimeOnly.MinValue);
+
+        _log = _log.Amend(
+            id,
+            title: title,
+            customer: customer,
+            start: date.Add(start.ToTimeSpan()),
+            end: end is { } e ? date.Add(e.ToTimeSpan()) : null,
+            status: status,
+            description: description);
+
+        _repo.SaveActivities(_log);
+        Refresh();
+    }
+
+    /// <summary>Corrects the day's Time In / Time Out after the fact.</summary>
+    public void AmendDayTimes(TimeOnly? timeIn, TimeOnly? timeOut)
+    {
+        var date = _day.Date.ToDateTime(TimeOnly.MinValue);
+
+        _day = _day.AmendTimes(
+            startedAt: timeIn is { } i ? date.Add(i.ToTimeSpan()) : null,
+            completedAt: timeOut is { } o ? date.Add(o.ToTimeSpan()) : null);
+
+        _repo.SaveDay(_day);
+        Refresh();
+    }
+
     /// <summary>The unclosed-day prompt: nothing is ever guessed, the user states the time.</summary>
     public DateOnly? UnclosedDay() => _repo.FindUnclosedDayBefore(DateOnly.FromDateTime(_clock()));
 
@@ -136,11 +172,61 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
         if (_repo.LoadDay(date) is { } stale) _repo.SaveDay(stale.Completed(leftAt));
     }
 
+    // ── reporting (S10-S12) ───────────────────────────────────────────────────
+
+    /// <summary>The days making up a period, most recent first.</summary>
+    /// <remarks>
+    /// Each day is summarised at <i>its own</i> close time, not at now. Summarising a
+    /// finished Tuesday against the current clock would keep growing its hours all week.
+    /// </remarks>
+    public IReadOnlyList<DaySummary> DaysIn(DateOnly from, DateOnly to)
+    {
+        var days = new List<DaySummary>();
+
+        foreach (var date in _repo.DatesBetween(from, to))
+        {
+            var day = date == _day.Date ? _day : _repo.LoadDay(date);
+            if (day is null) continue;
+
+            var log = date == _log.Date ? _log : _repo.LoadActivities(date);
+            var asOf = day.CompletedAt ?? (date == _day.Date ? _clock() : _clock());
+
+            days.Add(DaySummary.Build(day, log, _policy, asOf));
+        }
+
+        days.Reverse();
+        return days;
+    }
+
+    public (DateOnly From, DateOnly To) WeekOf(DateOnly date)
+    {
+        var monday = date.AddDays(-(((int)date.DayOfWeek + 6) % 7));
+        return (monday, monday.AddDays(6));
+    }
+
+    public (DateOnly From, DateOnly To) MonthOf(DateOnly date)
+    {
+        var first = new DateOnly(date.Year, date.Month, 1);
+        return (first, first.AddMonths(1).AddDays(-1));
+    }
+
+    public DateOnly Today => DateOnly.FromDateTime(_clock());
+
+    public PeriodSummary Period(DateOnly from, DateOnly to)
+        => PeriodSummary.Build(DaysIn(from, to), _policy);
+
     // ── the tick ──────────────────────────────────────────────────────────────
 
     public void Refresh()
     {
         var now = _clock();
+
+        // Re-read from storage first. The MCP server is a separate process writing to the
+        // same database, so anything an AI agent records would otherwise stay invisible
+        // here until the widget was restarted. Cheap: one shared connection, two small
+        // reads, every 30 seconds.
+        ReloadIfChanged(now);
+
         var status = WorkDayCalculator.Calculate(_day, now, _policy);
 
         StateText = status.Completion == DayCompletion.NotStarted ? "Not started"
@@ -190,6 +276,28 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
         AnnounceThresholds(status);
 
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    }
+
+    /// <summary>
+    /// Picks up work recorded elsewhere, and rolls the day over at midnight.
+    /// </summary>
+    private void ReloadIfChanged(DateTime now)
+    {
+        var today = DateOnly.FromDateTime(now);
+
+        // Past midnight the widget is still looking at yesterday. Roll to the new day
+        // rather than keep accruing against a date that has ended.
+        if (today != _day.Date)
+        {
+            _day = _repo.LoadDay(today) ?? WorkDay.NotStarted(today);
+            _log = _repo.LoadActivities(today);
+            _announcedHalfDay = false;
+            _announcedFullDay = false;
+            return;
+        }
+
+        if (_repo.LoadDay(today) is { } stored) _day = stored;
+        _log = _repo.LoadActivities(today);
     }
 
     /// <summary>
@@ -247,19 +355,11 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
 
     // ── configuration (§1) ────────────────────────────────────────────────────
 
-    private WorkingHoursPolicy LoadPolicy()
-    {
-        var half = _repo.GetConfig("half_day") ?? "04:15";
-        var full = _repo.GetConfig("full_day") ?? "08:30";
-        var start = _repo.GetConfig("default_start") ?? "09:00";
-        var days = _repo.GetConfig("working_days") ?? "Monday,Tuesday,Wednesday,Thursday,Friday";
-
-        return new WorkingHoursPolicy(
-            HalfDay: TimeSpan.Parse(half),
-            FullDay: TimeSpan.Parse(full),
-            WorkingDays: [.. days.Split(',').Select(Enum.Parse<DayOfWeek>)],
-            DefaultStart: TimeOnly.Parse(start));
-    }
+    /// <summary>
+    /// Delegates to <see cref="WorkingHoursPolicy.FromConfig"/> so the parsing is covered by
+    /// tests. It used to live here, where nothing could reach it.
+    /// </summary>
+    private WorkingHoursPolicy LoadPolicy() => WorkingHoursPolicy.FromConfig(_repo.GetConfig);
 
     public void SavePolicy(WorkingHoursPolicy policy)
     {

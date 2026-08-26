@@ -79,6 +79,27 @@ public sealed class WorkDay
 
     public WorkDay WithNote(string note) => With(note: note);
 
+    /// <summary>
+    /// Corrects Time In and/or Time Out after the fact. Null means "leave it alone".
+    /// </summary>
+    /// <remarks>
+    /// Separate from <see cref="Started"/> and <see cref="Completed"/> because those are
+    /// events — they close location spells and set the day's shape. This only moves the
+    /// clock hands: breaks, locations and the note survive untouched, and correcting the
+    /// end does not reopen a closed day.
+    /// </remarks>
+    public WorkDay AmendTimes(DateTime? startedAt = null, DateTime? completedAt = null)
+    {
+        var newStart = startedAt ?? StartedAt;
+        var newEnd = completedAt ?? CompletedAt;
+
+        if (newStart is { } s && newEnd is { } e && e <= s)
+            throw new ArgumentOutOfRangeException(nameof(completedAt),
+                $"A day cannot end at {e:HH:mm} having started at {s:HH:mm}.");
+
+        return new WorkDay(Date, newStart, newEnd, Breaks, Locations, Note);
+    }
+
     private IReadOnlyList<LocationSpell> CloseSpells(DateTime at)
         => [.. Locations.Select(s => s.End is null ? s with { End = at } : s)];
 

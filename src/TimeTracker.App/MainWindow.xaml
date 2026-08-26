@@ -25,9 +25,13 @@
                     <TextBlock Grid.Column="1" Text="Time tracker" Foreground="White"
                                FontFamily="Segoe UI" FontSize="12" FontWeight="SemiBold"
                                Margin="9,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock Grid.Column="2" Text="Hide" Foreground="#AA76CBFF" FontSize="10"
-                               Cursor="Hand" VerticalAlignment="Center" FontFamily="Segoe UI"
-                               MouseLeftButtonUp="OnHide" ToolTip="Hide to tray"/>
+                    <!-- A Button, not a TextBlock with a mouse handler. The window drags on
+                         MouseLeftButtonDown, and DragMove captures the mouse, so a
+                         MouseLeftButtonUp on a child element never arrives. A Button
+                         handles the click itself and stops it bubbling to the drag. -->
+                    <Button Grid.Column="2" Content="Hide" Click="OnHide"
+                            Style="{StaticResource TitleBarButton}"
+                            ToolTip="Hide to tray - the day keeps running"/>
                 </Grid>
             </Border>
 
@@ -107,23 +111,43 @@
 
                 <Border BorderThickness="0,1,0,0" BorderBrush="#2876CBFF" Padding="0,11,0,0">
                     <UniformGrid Columns="3">
-                        <StackPanel>
-                            <TextBlock Text="TODAY" Style="{StaticResource FootKey}"/>
-                            <TextBlock Text="{Binding TodayTotal}" Style="{StaticResource FootVal}"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="WEEK" Style="{StaticResource FootKey}"/>
-                            <TextBlock Text="{Binding WeekTotal}" Style="{StaticResource FootVal}"/>
-                        </StackPanel>
-                        <StackPanel>
-                            <TextBlock Text="MONTH" Style="{StaticResource FootKey}"/>
-                            <TextBlock Text="{Binding MonthTotal}" Style="{StaticResource FootVal}"/>
-                        </StackPanel>
+                        <Button Click="OnOpenSummary" Style="{StaticResource FooterButton}"
+                                ToolTip="Open the full report">
+                            <StackPanel>
+                                <TextBlock Text="TODAY" Style="{StaticResource FootKey}"/>
+                                <TextBlock Text="{Binding TodayTotal}" Style="{StaticResource FootVal}"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="OnOpenSummary" Style="{StaticResource FooterButton}"
+                                ToolTip="Open the full report">
+                            <StackPanel>
+                                <TextBlock Text="WEEK" Style="{StaticResource FootKey}"/>
+                                <TextBlock Text="{Binding WeekTotal}" Style="{StaticResource FootVal}"/>
+                            </StackPanel>
+                        </Button>
+                        <Button Click="OnOpenSummary" Style="{StaticResource FooterButton}"
+                                ToolTip="Open the full report">
+                            <StackPanel>
+                                <TextBlock Text="MONTH" Style="{StaticResource FootKey}"/>
+                                <TextBlock Text="{Binding MonthTotal}" Style="{StaticResource FootVal}"/>
+                            </StackPanel>
+                        </Button>
                     </UniformGrid>
                 </Border>
 
+                <!-- The same actions the tray menu offers. They were reachable only by
+                     right-clicking a tray icon, which is where features go to be undiscovered. -->
+                <UniformGrid Columns="2" Margin="0,11,0,0">
+                    <Button Content="Review / edit" Click="OnReview"
+                            Style="{StaticResource Ghost}" Margin="0,0,3,0"
+                            ToolTip="Check and correct today's hours and activities"/>
+                    <Button Content="Report" Click="OnOpenSummary"
+                            Style="{StaticResource Ghost}" Margin="3,0,0,0"
+                            ToolTip="Day, week and month"/>
+                </UniformGrid>
+
                 <Button x:Name="BtnComplete" Content="Complete day" Click="OnCompleteDay"
-                        Margin="0,11,0,0" Style="{StaticResource Ghost}"/>
+                        Margin="0,6,0,0" Style="{StaticResource Ghost}"/>
             </StackPanel>
         </StackPanel>
     </Border>

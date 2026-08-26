@@ -40,7 +40,7 @@ public partial class MainWindow : Window
         if (e.ChangedButton == MouseButton.Left) DragMove();
     }
 
-    private void OnHide(object sender, MouseButtonEventArgs e) => Hide();
+    private void OnHide(object sender, RoutedEventArgs e) => Hide();
 
     /// <summary>
     /// "Continue" is deliberately a no-op on the record when a task is already running —
@@ -65,6 +65,23 @@ public partial class MainWindow : Window
     }
 
     private void OnBreak(object sender, RoutedEventArgs e) => _model?.ToggleBreak();
+
+    /// <summary>
+    /// Review without ending the day. Corrections get noticed mid-afternoon, and a review
+    /// reachable only by finishing is one people work around instead of using.
+    /// </summary>
+    private void OnReview(object sender, RoutedEventArgs e)
+    {
+        if (_model is null) return;
+        var review = new ReviewWindow(_model) { Owner = this };
+        if (review.ShowDialog() == true) _model.CompleteDay();
+    }
+
+    private void OnOpenSummary(object sender, RoutedEventArgs e)
+    {
+        if (_model is null) return;
+        new SummaryWindow(_model).Show();
+    }
 
     private void OnCompleteDay(object sender, RoutedEventArgs e)
     {

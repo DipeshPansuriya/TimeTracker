@@ -1,0 +1,210 @@
+<Window x:Class="TimeTracker.App.SummaryWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Summary" Width="820" Height="720" ResizeMode="CanResize"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent">
+
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+        <Border.Effect>
+            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+        </Border.Effect>
+
+        <DockPanel>
+            <!-- Kale container signature: Deep Sea rule top, Noon rule bottom. -->
+            <Border DockPanel.Dock="Top" Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
+            <Border DockPanel.Dock="Bottom" Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
+
+            <!-- header -->
+            <Grid DockPanel.Dock="Top" Margin="24,18,24,0" MouseLeftButtonDown="OnDrag">
+                <StackPanel>
+                    <TextBlock Text="TIME TRACKER · REPORT" Foreground="#585858" FontSize="10"
+                               FontWeight="SemiBold" FontFamily="Segoe UI"/>
+                    <TextBlock x:Name="HeadingText" Foreground="#081F4B" FontSize="24"
+                               FontWeight="Bold" FontFamily="Segoe UI" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="RangeText" Foreground="#585858" FontSize="12"
+                               FontFamily="Segoe UI" Margin="0,2,0,0"/>
+                </StackPanel>
+                <Button Content="Close" Click="OnClose" VerticalAlignment="Top"
+                        HorizontalAlignment="Right" Style="{StaticResource DialogGhost}"
+                        Padding="14,5"/>
+            </Grid>
+
+            <!-- period switch + navigation -->
+            <Grid DockPanel.Dock="Top" Margin="24,16,24,0">
+                <StackPanel Orientation="Horizontal">
+                    <RadioButton x:Name="TabDay" Content="Day" GroupName="period" IsChecked="True"
+                                 Style="{StaticResource PeriodTab}" Checked="OnPeriodChanged"/>
+                    <RadioButton x:Name="TabWeek" Content="Week" GroupName="period"
+                                 Style="{StaticResource PeriodTab}" Checked="OnPeriodChanged"/>
+                    <RadioButton x:Name="TabMonth" Content="Month" GroupName="period"
+                                 Style="{StaticResource PeriodTab}" Checked="OnPeriodChanged"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="&lt; Previous" Click="OnPrevious"
+                            Style="{StaticResource DialogGhost}" Padding="12,5" Margin="0,0,6,0"/>
+                    <Button x:Name="BtnToday" Content="Today" Click="OnToday"
+                            Style="{StaticResource DialogGhost}" Padding="12,5" Margin="0,0,6,0"/>
+                    <Button x:Name="BtnNext" Content="Next &gt;" Click="OnNext"
+                            Style="{StaticResource DialogGhost}" Padding="12,5"/>
+                </StackPanel>
+            </Grid>
+
+            <Border DockPanel.Dock="Top" Height="1" Background="#ECECE4" Margin="24,14,24,0"/>
+
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="24,16,24,16">
+                <StackPanel>
+
+                    <!-- headline figures -->
+                    <ItemsControl x:Name="KpiList" Margin="0,0,0,20">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate><UniformGrid Columns="4"/></ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderThickness="0,3,0,0"
+                                        BorderBrush="{Binding Accent}"
+                                        Background="#FAFAF7" Padding="12,9" Margin="0,0,8,8">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Label}" Foreground="#585858"
+                                                   FontSize="10" FontWeight="SemiBold"
+                                                   FontFamily="Segoe UI"/>
+                                        <TextBlock Text="{Binding Value}"
+                                                   Foreground="{Binding Accent}" FontSize="20"
+                                                   FontFamily="Consolas" Margin="0,3,0,0"/>
+                                        <TextBlock Text="{Binding Note}" Foreground="#585858"
+                                                   FontSize="11" FontFamily="Segoe UI"
+                                                   Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- day-by-day, only for week and month -->
+                    <StackPanel x:Name="DaysSection" Margin="0,0,0,20">
+                        <TextBlock Text="DAY BY DAY" Style="{StaticResource SectionLabel}"/>
+                        <ItemsControl x:Name="DaysList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#F1F1EC"
+                                            Padding="8,7">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="130"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                                <ColumnDefinition Width="80"/>
+                                                <ColumnDefinition Width="80"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Date}"
+                                                       Foreground="#081F4B" FontSize="13"
+                                                       FontFamily="Segoe UI"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding Detail}"
+                                                       Foreground="#585858" FontSize="11.5"
+                                                       FontFamily="Segoe UI" TextTrimming="CharacterEllipsis"/>
+                                            <Border Grid.Column="2" CornerRadius="9" Padding="8,2"
+                                                    Background="{Binding StatusBg}"
+                                                    VerticalAlignment="Center" Margin="0,0,10,0">
+                                                <TextBlock Text="{Binding Status}"
+                                                           Foreground="{Binding StatusFg}"
+                                                           FontSize="10" FontWeight="SemiBold"
+                                                           FontFamily="Segoe UI"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="3" Text="{Binding Worked}"
+                                                       Foreground="#081F4B" FontSize="13"
+                                                       FontFamily="Consolas"
+                                                       HorizontalAlignment="Right"/>
+                                            <TextBlock Grid.Column="4" Text="{Binding Balance}"
+                                                       Foreground="{Binding BalanceFg}" FontSize="13"
+                                                       FontFamily="Consolas"
+                                                       HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+
+                    <!-- task detail, only for a single day -->
+                    <StackPanel x:Name="TasksSection" Margin="0,0,0,20">
+                        <TextBlock Text="ACTIVITIES" Style="{StaticResource SectionLabel}"/>
+                        <ItemsControl x:Name="TasksList">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#F1F1EC"
+                                            Padding="8,8">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="160"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="70"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Text="{Binding Id}"
+                                                       Foreground="#8A8A8A" FontSize="10.5"
+                                                       FontFamily="Consolas" VerticalAlignment="Center"/>
+                                            <StackPanel Grid.Column="1">
+                                                <TextBlock Text="{Binding Title}" Foreground="#081F4B"
+                                                           FontSize="13" FontFamily="Segoe UI"/>
+                                                <TextBlock Text="{Binding Customer}" Foreground="#585858"
+                                                           FontSize="11" FontFamily="Segoe UI"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           Foreground="#8A8A8A" FontSize="11"
+                                                           FontFamily="Segoe UI" TextWrapping="Wrap"
+                                                           Visibility="{Binding DescriptionVisible}"/>
+                                            </StackPanel>
+                                            <TextBlock Grid.Column="2" Text="{Binding Times}"
+                                                       Foreground="#585858" FontSize="12"
+                                                       FontFamily="Consolas" VerticalAlignment="Center"/>
+                                            <TextBlock Grid.Column="3" Text="{Binding Duration}"
+                                                       Foreground="#081F4B" FontSize="13"
+                                                       FontFamily="Consolas" VerticalAlignment="Center"
+                                                       HorizontalAlignment="Right"/>
+                                            <Border Grid.Column="4" BorderThickness="1" CornerRadius="2"
+                                                    BorderBrush="{Binding StatusFg}" Padding="6,2"
+                                                    Margin="12,0,0,0" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Status}"
+                                                           Foreground="{Binding StatusFg}"
+                                                           FontSize="9.5" FontFamily="Consolas"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock x:Name="NoTasksText" Text="No activities recorded."
+                                   Foreground="#8A8A8A" FontSize="12" FontFamily="Segoe UI"
+                                   Margin="8,8,0,0" Visibility="Collapsed"/>
+                    </StackPanel>
+
+                    <!-- breakdowns -->
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="BY CUSTOMER" Style="{StaticResource SectionLabel}"/>
+                            <ItemsControl x:Name="CustomerList"
+                                          ItemTemplate="{StaticResource BreakdownRow}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="BY TASK" Style="{StaticResource SectionLabel}"/>
+                            <ItemsControl x:Name="TaskBreakdownList"
+                                          ItemTemplate="{StaticResource BreakdownRow}"/>
+                        </StackPanel>
+                    </Grid>
+
+                    <TextBlock Text="Confidential · Internal use only" Foreground="#8A8A8A"
+                               FontSize="11" FontFamily="Segoe UI" Margin="0,24,0,0"
+                               HorizontalAlignment="Right"/>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</Window>

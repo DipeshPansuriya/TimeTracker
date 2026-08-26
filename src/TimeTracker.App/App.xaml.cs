@@ -1,4 +1,5 @@
 using System.Drawing;
+using System.IO;
 using System.Windows;
 using System.Windows.Threading;
 using TimeTracker.Core;
@@ -76,7 +77,14 @@ public partial class App : System.Windows.Application
     /// <summary>The one question of the day (§2), pre-filled from the configured default.</summary>
     private void AskToStartTheDay()
     {
-        if (_model is null || _model.DayStarted) return;
+        if (_model is null) return;
+
+        var storedTimeIn = _model.Day.StartedAt?.ToString("HH:mm") ?? "none";
+        Log($"policy.DefaultStart={_model.Policy.DefaultStart:HH\\:mm} " +
+            $"fullDay={_model.Policy.FullDay} dayStarted={_model.DayStarted} " +
+            $"storedTimeIn={storedTimeIn}");
+
+        if (_model.DayStarted) return;
 
         if (!_model.Policy.IsWorkingDay(DateOnly.FromDateTime(DateTime.Now)))
             return;   // not a configured working day — stay quiet
@@ -87,28 +95,97 @@ public partial class App : System.Windows.Application
             defaultTime: _model.Policy.DefaultStart,
             showLocation: true);
 
-        if (dialog.ShowDialog() == true)
+        var confirmed = dialog.ShowDialog();
+        Log($"startDialog result={confirmed} selected={dialog.SelectedTime:HH\\:mm}");
+
+        if (confirmed == true)
             _model.StartDay(
                 DateTime.Today.Add(dialog.SelectedTime.ToTimeSpan()),
                 dialog.SelectedLocation);
+    }
+
+    /// <summary>
+    /// Appends a line to %LOCALAPPDATA%\TimeTrackerpp.log.
+    /// </summary>
+    /// <remarks>
+    /// A desktop application that misbehaves on someone else's machine is undiagnosable
+    /// without one of these. Deliberately plain text, in the data folder, and never
+    /// throwing — a logging failure must not take the widget down.
+    /// </remarks>
+    internal static void Log(string message)
+    {
+        try
+        {
+            var path = Path.Combine(TimeTrackerDatabase.DefaultDirectory, "app.log");
+            Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+            File.AppendAllText(path, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss}  {message}{Environment.NewLine}");
+        }
+        catch (Exception)
+        {
+            // Diagnostics are never worth crashing for.
+        }
     }
 
     private void BuildTray()
     {
         var menu = new Forms.ContextMenuStrip();
         menu.Items.Add("Show widget", null, (_, _) => ShowWidget());
+        // Reachable all day, not only when finishing: corrections are usually noticed
+        // mid-afternoon, and a review you can only open by ending the day is one people
+        // work around instead of using.
+        menu.Items.Add("Review / edit today", null, (_, _) => ShowReview());
+        menu.Items.Add("Day, week and month report", null, (_, _) => ShowSummary());
         menu.Items.Add("Complete day", null, (_, _) => { _model?.CompleteDay(); ShowWidget(); });
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => Shutdown());
 
         _tray = new Forms.NotifyIcon
         {
-            Icon = SystemIcons.Application,
+            Icon = LoadAppIcon(),
             Visible = true,
             Text = "Time tracker",
             ContextMenuStrip = menu
         };
         _tray.DoubleClick += (_, _) => ShowWidget();
+    }
+
+    /// <summary>The embedded Kale mark, at the size the tray actually wants.</summary>
+    /// <remarks>
+    /// Asking for <c>SystemInformation.SmallIconSize</c> matters: the .ico carries several
+    /// frames, and letting the runtime choose yields a scaled-down 32px frame that looks
+    /// soft at tray scale. Falls back to the system icon rather than throwing - a missing
+    /// icon must never stop the day being tracked.
+    /// </remarks>
+    private static Icon LoadAppIcon()
+    {
+        try
+        {
+            using var stream = typeof(App).Assembly
+                .GetManifestResourceStream("TimeTracker.App.app.ico");
+            if (stream is not null)
+                return new Icon(stream, Forms.SystemInformation.SmallIconSize);
+        }
+        catch (Exception)
+        {
+            // Fall through to the system icon below.
+        }
+
+        return SystemIcons.Application;
+    }
+
+    private void ShowSummary()
+    {
+        if (_model is null) return;
+        _model.Refresh();
+        new SummaryWindow(_model).Show();
+    }
+
+    private void ShowReview()
+    {
+        if (_model is null) return;
+        ShowWidget();
+        var review = new ReviewWindow(_model) { Owner = _widget };
+        if (review.ShowDialog() == true) _model.CompleteDay();
     }
 
     private void ShowWidget()
@@ -122,11 +199,30 @@ public partial class App : System.Windows.Application
     private void ShowBalloon(string title, string message)
         => _tray?.ShowBalloonTip(5000, title, message, Forms.ToolTipIcon.Info);
 
+    /// <summary>
+    /// Parks the widget above the tray, using its measured height rather than a guess.
+    /// </summary>
+    /// <remarks>
+    /// This used to subtract a hard-coded 420px. Adding a row of buttons made the widget
+    /// taller and it started hanging off the bottom of the screen — the classic cost of a
+    /// magic number standing in for a measurement.
+    /// </remarks>
     private static void PositionBottomRight(Window window)
     {
         var area = SystemParameters.WorkArea;
-        window.Left = area.Right - window.Width - 16;
-        window.Top = area.Bottom - 420;
+
+        void Park()
+        {
+            var height = window.ActualHeight > 0 ? window.ActualHeight : window.Height;
+            window.Left = area.Right - window.Width - 16;
+            window.Top = Math.Max(area.Top + 8, area.Bottom - height - 12);
+        }
+
+        Park();
+
+        // SizeToContent means the final height is not known until it has been laid out,
+        // so park again once it is.
+        window.SizeChanged += (_, _) => Park();
     }
 
     protected override void OnExit(ExitEventArgs e)

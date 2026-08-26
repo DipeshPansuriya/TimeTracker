@@ -2,3 +2,7 @@ bin/
 obj/
 .vs/
 *.user
+
+# Published output. Two self-contained exes, ~113 MB - build them with
+# deploy/publish, do not carry them in history.
+dist/

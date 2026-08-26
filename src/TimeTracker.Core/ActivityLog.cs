@@ -123,6 +123,75 @@ public sealed class ActivityLog
         => new(Date, CloseRunning(at, status));
 
     /// <summary>
+    /// Corrects an already-recorded activity (brief §23's "[Edit]"). Any argument left null
+    /// means "leave it alone"; pass an empty string to clear a customer or description.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The activity id is preserved deliberately. It is the idempotency key, so a correction
+    /// must <i>update</i> the record HRMS already has rather than arrive as a second one
+    /// beside it.
+    /// </para>
+    /// <para>
+    /// People mistype start times, forget to switch task and pick the wrong customer. A
+    /// timesheet that cannot be corrected is one that gets abandoned or, worse, guessed at
+    /// on the last day of the month.
+    /// </para>
+    /// </remarks>
+    public ActivityLog Amend(
+        ActivityId id,
+        string? title = null,
+        string? customer = null,
+        DateTime? start = null,
+        DateTime? end = null,
+        ActivityStatus? status = null,
+        string? description = null,
+        string? notes = null)
+    {
+        var index = IndexOf(id);
+        var existing = Activities[index];
+
+        var newStart = start ?? existing.Start;
+        var newEnd = end ?? existing.End;
+
+        if (newEnd is { } e && e <= newStart)
+            throw new ArgumentOutOfRangeException(nameof(end),
+                $"An activity cannot end at {e:HH:mm} having started at {newStart:HH:mm}.");
+
+        if (title is not null && string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("An activity needs a title.", nameof(title));
+
+        var amended = existing with
+        {
+            Title = title ?? existing.Title,
+            Customer = Blank(customer) ? null : customer ?? existing.Customer,
+            Start = newStart,
+            End = newEnd,
+            Status = status ?? existing.Status,
+            Description = Blank(description) ? null : description ?? existing.Description,
+            Notes = Blank(notes) ? null : notes ?? existing.Notes
+        };
+
+        var updated = Activities.ToList();
+        updated[index] = amended;
+
+        // Re-sorted: correcting a start time can move an activity earlier in the day, and a
+        // list that no longer reads in order makes the review screen confusing.
+        return new ActivityLog(Date, [.. updated.OrderBy(a => a.Start)]);
+    }
+
+    /// <summary>Empty string means "clear this"; null means "leave it".</summary>
+    private static bool Blank(string? value) => value is not null && value.Length == 0;
+
+    private int IndexOf(ActivityId id)
+    {
+        for (var i = 0; i < Activities.Count; i++)
+            if (Activities[i].Id == id) return i;
+
+        throw new ArgumentException($"No activity {id} on {Date:yyyy-MM-dd}.", nameof(id));
+    }
+
+    /// <summary>
     /// Inserts an already-finished activity without disturbing whatever is running.
     /// </summary>
     /// <remarks>

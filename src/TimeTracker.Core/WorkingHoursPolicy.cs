@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace TimeTracker.Core;
 
 /// <summary>
@@ -26,4 +28,57 @@ public sealed record WorkingHoursPolicy(
     public TimeSpan Required => FullDay;
 
     public bool IsWorkingDay(DateOnly date) => WorkingDays.Contains(date.DayOfWeek);
+
+    /// <summary>The values used until the user changes them.</summary>
+    public static WorkingHoursPolicy Default { get; } = new(
+        HalfDay: new TimeSpan(4, 15, 0),
+        FullDay: new TimeSpan(8, 30, 0),
+        WorkingDays: [DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday,
+                      DayOfWeek.Thursday, DayOfWeek.Friday],
+        DefaultStart: new TimeOnly(9, 0));
+
+    /// <summary>
+    /// Builds the policy from stored configuration, falling back to <see cref="Default"/>
+    /// for anything absent or unreadable.
+    /// </summary>
+    /// <remarks>
+    /// In Core rather than the widget because it is logic, and logic in a view model is
+    /// logic nothing can test. Parsing is culture-invariant on purpose: these are stored
+    /// values, not user input, and a machine set to a 12-hour locale must not read
+    /// <c>09:00</c> as anything other than nine in the morning.
+    /// </remarks>
+    public static WorkingHoursPolicy FromConfig(Func<string, string?> get)
+    {
+        ArgumentNullException.ThrowIfNull(get);
+
+        return new WorkingHoursPolicy(
+            HalfDay: Span(get("half_day"), Default.HalfDay),
+            FullDay: Span(get("full_day"), Default.FullDay),
+            WorkingDays: Days(get("working_days")),
+            DefaultStart: Start(get("default_start")));
+    }
+
+    private static TimeSpan Span(string? value, TimeSpan fallback)
+        => TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out var parsed)
+            ? parsed : fallback;
+
+    private static TimeOnly Start(string? value)
+        => TimeOnly.TryParseExact(value, "HH:mm", CultureInfo.InvariantCulture,
+                                  DateTimeStyles.None, out var parsed)
+            ? parsed : Default.DefaultStart;
+
+    private static IReadOnlyCollection<DayOfWeek> Days(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return Default.WorkingDays;
+
+        var days = value
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(d => Enum.TryParse<DayOfWeek>(d, ignoreCase: true, out var day)
+                ? day : (DayOfWeek?)null)
+            .Where(d => d is not null)
+            .Select(d => d!.Value)
+            .ToHashSet();
+
+        return days.Count == 0 ? Default.WorkingDays : days;
+    }
 }

@@ -10,9 +10,13 @@ namespace TimeTracker.App;
 /// </summary>
 public partial class StartDayWindow : Window
 {
+    /// <summary>Only the morning prompt queries a distant time; closing yesterday is expected to be.</summary>
+    private readonly bool _confirmDistantStart;
+
     public StartDayWindow(string title, string question, TimeOnly defaultTime, bool showLocation)
     {
         InitializeComponent();
+        _confirmDistantStart = showLocation;   // true only for the start-of-day prompt
 
         TitleText.Text = title;
         QuestionText.Text = question;
@@ -42,6 +46,30 @@ public partial class StartDayWindow : Window
             TimeBox.Focus();
             TimeBox.SelectAll();
             return;
+        }
+
+        // A start time hours in the past is legitimate — you may have begun at 07:00 and
+        // only opened the widget after lunch. But it is also what a stray keystroke or a
+        // mis-parse looks like, so it gets confirmed rather than silently recorded.
+        if (_confirmDistantStart &&
+            TimeEntry.LooksSuspicious(parsed, DateTime.Now, out var agesAgo))
+        {
+            var answer = System.Windows.MessageBox.Show(
+                this,
+                $"That records your day as starting at {parsed:HH\\:mm} — " +
+                $"{(int)agesAgo.TotalHours}h {agesAgo.Minutes:00}m ago." +
+                Environment.NewLine + Environment.NewLine +
+                "Is that right?",
+                "Time tracker",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+
+            if (answer != MessageBoxResult.Yes)
+            {
+                TimeBox.Focus();
+                TimeBox.SelectAll();
+                return;
+            }
         }
 
         SelectedTime = parsed;

@@ -12,7 +12,16 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>TimeTracker</AssemblyName>
     <RootNamespace>TimeTracker.App</RootNamespace>
+    <!-- Shows on the exe, the Start Menu shortcut and the taskbar. -->
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Also embedded, so the tray icon is loaded from a known resource rather than
+         extracted from the exe - extraction returns a single size and looks blurry
+         at tray scale. -->
+    <EmbeddedResource Include="app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TimeTracker.Core\TimeTracker.Core.csproj" />
