@@ -1,0 +1,55 @@
+<Window x:Class="TimeTracker.App.StartDayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Width="380" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="False"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent">
+
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+        <Border.Effect>
+            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <!-- The container signature: 4px Deep Sea rule across the top. -->
+            <Border Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
+
+            <StackPanel Margin="24,20,24,22">
+                <TextBlock x:Name="TitleText" Text="Good morning" Foreground="#081F4B"
+                           FontSize="20" FontWeight="Bold" FontFamily="Segoe UI"/>
+                <TextBlock x:Name="QuestionText" Text="What time did you start working?"
+                           Foreground="#585858" FontSize="13" FontFamily="Segoe UI"
+                           Margin="0,4,0,18" TextWrapping="Wrap"/>
+
+                <TextBlock Text="START TIME" Style="{StaticResource DialogLabel}"/>
+                <TextBox x:Name="TimeBox" Style="{StaticResource DialogInput}"
+                         FontFamily="Consolas" FontSize="18"/>
+
+                <StackPanel x:Name="LocationPanel">
+                    <TextBlock Text="WHERE ARE YOU WORKING?" Style="{StaticResource DialogLabel}"/>
+                    <UniformGrid Columns="3" Margin="0,0,0,18">
+                        <RadioButton x:Name="OptOffice" Content="Office" IsChecked="True"
+                                     GroupName="loc" FontFamily="Segoe UI" FontSize="13"/>
+                        <RadioButton x:Name="OptHome" Content="Home"
+                                     GroupName="loc" FontFamily="Segoe UI" FontSize="13"/>
+                        <RadioButton x:Name="OptClient" Content="Client"
+                                     GroupName="loc" FontFamily="Segoe UI" FontSize="13"/>
+                    </UniformGrid>
+                </StackPanel>
+
+                <TextBlock x:Name="ErrorText" Foreground="#C62828" FontSize="12"
+                           FontFamily="Segoe UI" Margin="0,0,0,10" Visibility="Collapsed"
+                           TextWrapping="Wrap"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Not yet" Click="OnCancel" Style="{StaticResource DialogGhost}"
+                            Margin="0,0,8,0"/>
+                    <Button x:Name="ConfirmButton" Content="Start" Click="OnConfirm"
+                            Style="{StaticResource DialogPrimary}" IsDefault="True"/>
+                </StackPanel>
+            </StackPanel>
+
+            <Border Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
+        </StackPanel>
+    </Border>
+</Window>

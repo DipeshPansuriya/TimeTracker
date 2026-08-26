@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <!-- For the tray icon and its balloon notifications. WPF ships no NotifyIcon of its
+         own, and the WinForms one avoids both an extra dependency and the AppUserModelID
+         registration that real Windows toasts require. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <AssemblyName>TimeTracker</AssemblyName>
+    <RootNamespace>TimeTracker.App</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TimeTracker.Core\TimeTracker.Core.csproj" />
+    <ProjectReference Include="..\TimeTracker.Storage\TimeTracker.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

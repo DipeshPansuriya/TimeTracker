@@ -205,4 +205,58 @@ public class ActivityLogTests
         Assert.Equal(new TimeSpan(2, 0, 0), totals["Galaxy"]);
         Assert.Equal(new TimeSpan(1, 0, 0), totals["ABC Logistics"]);
     }
+
+    // ── recording past work (found in a live MCP session) ─────────────────────
+
+    [Fact]
+    public void RecordingPastWork_DoesNotCloseTheRunningTask()
+    {
+        // Telling an agent "I worked on the API issue from 10 to 12:30" at 18:28 describes
+        // the morning. Routing it through Start() closed the running task at 10:00 and
+        // produced a record whose end preceded its own start.
+        var log = Empty
+            .Start("Database migration", "ABC Logistics", At(18, 28))
+            .Record("API performance issue", "Galaxy", At(10, 0), At(12, 30));
+
+        Assert.Equal("Database migration", log.Current!.Title);
+        Assert.True(log.Current.IsRunning);
+        Assert.Equal(2, log.Activities.Count);
+    }
+
+    [Fact]
+    public void ARecordedActivityIsCompleteWithItsOwnTimes()
+    {
+        var log = Empty.Record("API performance issue", "Galaxy", At(10, 0), At(12, 30));
+
+        var entry = log.Activities[0];
+        Assert.Equal(ActivityStatus.Completed, entry.Status);
+        Assert.Equal(new TimeSpan(2, 30, 0), entry.DurationAt(At(18, 0)));
+    }
+
+    [Fact]
+    public void RecordingCarriesTheCurrentCustomerWhenNoneIsGiven()
+    {
+        var log = Empty
+            .Start("Something", "Galaxy", At(9, 0))
+            .Record("Earlier thing", null, At(8, 0), At(8, 30));
+
+        Assert.Equal("Galaxy", log.Activities[1].Customer);
+    }
+
+    [Fact]
+    public void RecordingABackwardsRangeIsRejected()
+        => Assert.Throws<ArgumentOutOfRangeException>(
+            () => Empty.Record("Nope", "Galaxy", At(12, 0), At(10, 0)));
+
+    [Fact]
+    public void ClosingATaskEarlierThanItsStart_ClampsRatherThanCorrupting()
+    {
+        // Defensive: whatever the caller passes, an activity must never end before it began.
+        var log = Empty
+            .Start("Database migration", "ABC Logistics", At(18, 28))
+            .CompleteCurrent(At(10, 0), ActivityStatus.Completed);
+
+        Assert.Equal(At(18, 28), log.Activities[0].End);
+        Assert.Equal(TimeSpan.Zero, log.Activities[0].DurationAt(At(19, 0)));
+    }
 }

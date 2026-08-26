@@ -122,8 +122,44 @@ public sealed class ActivityLog
     public ActivityLog CompleteCurrent(DateTime at, ActivityStatus status)
         => new(Date, CloseRunning(at, status));
 
+    /// <summary>
+    /// Inserts an already-finished activity without disturbing whatever is running.
+    /// </summary>
+    /// <remarks>
+    /// This exists because recording past work and switching task are different intentions.
+    /// An agent told "I worked on the API issue from 10 to 12:30" at half past six is
+    /// describing the morning, not ending the task in front of them — and routing that
+    /// through <see cref="Start"/> closed the running activity at 10:00, producing a record
+    /// whose end preceded its own start. Observed in a live MCP session, not theorised.
+    /// </remarks>
+    public ActivityLog Record(
+        string title, string? customer, DateTime start, DateTime end, string? description = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(title);
+        if (end <= start)
+            throw new ArgumentOutOfRangeException(nameof(end), "End must be after start.");
+
+        var entry = new Activity(
+            Id: ActivityId.Create(Date, Activities.Count + 1),
+            Title: title,
+            Customer: customer ?? CurrentCustomer,
+            Start: start,
+            End: end,
+            Status: ActivityStatus.Completed,
+            Description: description);
+
+        return new ActivityLog(Date, [.. Activities, entry]);
+    }
+
+    /// <summary>
+    /// Closes running activities at <paramref name="at"/>, never before their own start —
+    /// a backwards end is corrupt data that every duration and rollup then has to defend
+    /// against.
+    /// </summary>
     private List<Activity> CloseRunning(DateTime at, ActivityStatus status)
-        => [.. Activities.Select(a => a.IsRunning ? a with { End = at, Status = status } : a)];
+        => [.. Activities.Select(a => a.IsRunning
+            ? a with { End = at < a.Start ? a.Start : at, Status = status }
+            : a)];
 
     /// <summary>
     /// Activities the end-of-day review must chase the user about (§23). Today that is a
