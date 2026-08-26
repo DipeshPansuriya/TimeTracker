@@ -61,6 +61,14 @@ public sealed class ActivityLog
 
     public static ActivityLog Empty(DateOnly date) => new(date, []);
 
+    /// <summary>
+    /// Rebuilds a log from stored rows. Used by the repository only — it bypasses the
+    /// <see cref="Start"/> rules on purpose, because persisted activities have already been
+    /// through them and re-applying customer carry-forward on load would rewrite history.
+    /// </summary>
+    public static ActivityLog Rehydrate(DateOnly date, IReadOnlyList<Activity> activities)
+        => new(date, [.. activities.OrderBy(a => a.Start)]);
+
     /// <summary>The activity currently running, if any.</summary>
     public Activity? Current => Activities.LastOrDefault(a => a.IsRunning);
 

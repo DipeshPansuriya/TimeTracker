@@ -1,8 +1,10 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/TimeTracker.Core/TimeTracker.Core.csproj" />
+    <Project Path="src/TimeTracker.Storage/TimeTracker.Storage.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/TimeTracker.Core.Tests/TimeTracker.Core.Tests.csproj" />
+    <Project Path="tests/TimeTracker.Storage.Tests/TimeTracker.Storage.Tests.csproj" />
   </Folder>
 </Solution>

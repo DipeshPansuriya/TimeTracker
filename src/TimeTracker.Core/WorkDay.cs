@@ -43,25 +43,87 @@ public sealed class WorkDay
 
     public IReadOnlyList<BreakInterval> Breaks { get; }
 
+    /// <summary>Where the user was, over the course of the day (§5).</summary>
+    public IReadOnlyList<LocationSpell> Locations { get; }
+
+    /// <summary>Free-text reason, e.g. why the office arrival was after midday (§5).</summary>
+    public string? Note { get; }
+
     private WorkDay(DateOnly date, DateTime? startedAt, DateTime? completedAt,
-                    IReadOnlyList<BreakInterval> breaks)
-        => (Date, StartedAt, CompletedAt, Breaks) = (date, startedAt, completedAt, breaks);
+                    IReadOnlyList<BreakInterval> breaks,
+                    IReadOnlyList<LocationSpell> locations, string? note)
+        => (Date, StartedAt, CompletedAt, Breaks, Locations, Note)
+         = (date, startedAt, completedAt, breaks, locations, note);
 
     /// <summary>A configured working day the user has not started yet.</summary>
-    public static WorkDay NotStarted(DateOnly date) => new(date, null, null, []);
+    public static WorkDay NotStarted(DateOnly date) => new(date, null, null, [], [], null);
 
     /// <summary>The user answered the morning prompt with <paramref name="at"/>.</summary>
-    public static WorkDay Started(DateTime at) => new(DateOnly.FromDateTime(at), at, null, []);
+    public static WorkDay Started(DateTime at)
+        => new(DateOnly.FromDateTime(at), at, null, [], [], null);
 
     public WorkDay WithBreak(DateTime start, DateTime end)
-        => new(Date, StartedAt, CompletedAt, [.. Breaks, new BreakInterval(start, end)]);
+        => With(breaks: [.. Breaks, new BreakInterval(start, end)]);
 
     /// <summary>User pressed Break and has not returned.</summary>
     public WorkDay WithOpenBreak(DateTime start)
-        => new(Date, StartedAt, CompletedAt, [.. Breaks, new BreakInterval(start, null)]);
+        => With(breaks: [.. Breaks, new BreakInterval(start, null)]);
 
     /// <summary>User pressed Complete day. Hours stop accruing from this point.</summary>
-    public WorkDay Completed(DateTime at) => new(Date, StartedAt, at, Breaks);
+    public WorkDay Completed(DateTime at)
+        => With(completedAt: at, locations: CloseSpells(at));
+
+    /// <summary>Records a move to a new location, closing the previous spell.</summary>
+    public WorkDay AtLocation(WorkLocation location, DateTime from)
+        => With(locations: [.. CloseSpells(from), new LocationSpell(from, null, location)]);
+
+    public WorkDay WithNote(string note) => With(note: note);
+
+    private IReadOnlyList<LocationSpell> CloseSpells(DateTime at)
+        => [.. Locations.Select(s => s.End is null ? s with { End = at } : s)];
+
+    private WorkDay With(
+        DateTime? completedAt = null,
+        IReadOnlyList<BreakInterval>? breaks = null,
+        IReadOnlyList<LocationSpell>? locations = null,
+        string? note = null)
+        => new(Date, StartedAt, completedAt ?? CompletedAt, breaks ?? Breaks,
+               locations ?? Locations, note ?? Note);
 
     public bool IsOpen => StartedAt is not null && CompletedAt is null;
+
+    public WorkLocation? LocationAt(DateTime at)
+        => Locations.LastOrDefault(s => s.Start <= at && (s.End is null || at < s.End))?.Location;
+
+    public bool HadClientVisit => Locations.Any(s => s.Location == WorkLocation.Client);
+
+    /// <summary>
+    /// The location the day is attributed to when a single answer is needed — the one the
+    /// user spent longest at. A client visit is reported separately rather than overwriting
+    /// this, so a day can be both "office" and "had a client visit".
+    /// </summary>
+    public WorkLocation? PrimaryLocation(DateTime now)
+        => Locations.Count == 0 ? null
+         : Locations
+            .GroupBy(s => s.Location)
+            .OrderByDescending(g => g.Aggregate(TimeSpan.Zero,
+                (t, s) => t + ((s.End ?? CompletedAt ?? now) - s.Start)))
+            .First().Key;
+
+    /// <summary>
+    /// True when the user arrived at the office after the midday boundary having been
+    /// elsewhere, and has not yet explained why (§5).
+    /// </summary>
+    public bool NeedsLocationNote(TimeOnly middayBoundary)
+    {
+        if (Note is not null) return false;
+
+        var officeSpell = Locations.FirstOrDefault(s => s.Location == WorkLocation.Office);
+        if (officeSpell is null) return false;
+
+        var arrivedAfterMidday = TimeOnly.FromDateTime(officeSpell.Start) > middayBoundary;
+        var wasElsewhereFirst = Locations.Any(s => s.Location != WorkLocation.Office
+                                                && s.Start < officeSpell.Start);
+        return arrivedAfterMidday && wasElsewhereFirst;
+    }
 }
