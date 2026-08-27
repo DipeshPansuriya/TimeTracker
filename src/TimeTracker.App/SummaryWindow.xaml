@@ -5,24 +5,22 @@
         WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent">
 
-    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#E4E6EA">
         <Border.Effect>
-            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+            <DropShadowEffect Color="#16181D" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
         </Border.Effect>
 
         <DockPanel>
-            <!-- Kale container signature: Deep Sea rule top, Noon rule bottom. -->
-            <Border DockPanel.Dock="Top" Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
-            <Border DockPanel.Dock="Bottom" Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
+            <Border DockPanel.Dock="Top" Height="3" Background="#F2A03D" CornerRadius="8,8,0,0"/>
 
             <!-- header -->
             <Grid DockPanel.Dock="Top" Margin="24,18,24,0" MouseLeftButtonDown="OnDrag">
                 <StackPanel>
-                    <TextBlock Text="TIME TRACKER · REPORT" Foreground="#585858" FontSize="10"
+                    <TextBlock Text="TIME TRACKER · REPORT" Foreground="#6B7280" FontSize="10"
                                FontWeight="SemiBold" FontFamily="Segoe UI"/>
-                    <TextBlock x:Name="HeadingText" Foreground="#081F4B" FontSize="24"
+                    <TextBlock x:Name="HeadingText" Foreground="#16181D" FontSize="24"
                                FontWeight="Bold" FontFamily="Segoe UI" Margin="0,2,0,0"/>
-                    <TextBlock x:Name="RangeText" Foreground="#585858" FontSize="12"
+                    <TextBlock x:Name="RangeText" Foreground="#6B7280" FontSize="12"
                                FontFamily="Segoe UI" Margin="0,2,0,0"/>
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Top"
@@ -56,7 +54,7 @@
                 </StackPanel>
             </Grid>
 
-            <Border DockPanel.Dock="Top" Height="1" Background="#ECECE4" Margin="24,14,24,0"/>
+            <Border DockPanel.Dock="Top" Height="1" Background="#E4E6EA" Margin="24,14,24,0"/>
 
             <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="24,16,24,16">
                 <StackPanel>
@@ -70,15 +68,15 @@
                             <DataTemplate>
                                 <Border BorderThickness="0,3,0,0"
                                         BorderBrush="{Binding Accent}"
-                                        Background="#FAFAF7" Padding="12,9" Margin="0,0,8,8">
+                                        Background="#F7F8F9" Padding="12,9" Margin="0,0,8,8">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Label}" Foreground="#585858"
+                                        <TextBlock Text="{Binding Label}" Foreground="#6B7280"
                                                    FontSize="10" FontWeight="SemiBold"
                                                    FontFamily="Segoe UI"/>
                                         <TextBlock Text="{Binding Value}"
                                                    Foreground="{Binding Accent}" FontSize="20"
                                                    FontFamily="Consolas" Margin="0,3,0,0"/>
-                                        <TextBlock Text="{Binding Note}" Foreground="#585858"
+                                        <TextBlock Text="{Binding Note}" Foreground="#6B7280"
                                                    FontSize="11" FontFamily="Segoe UI"
                                                    Margin="0,2,0,0" TextWrapping="Wrap"/>
                                     </StackPanel>
@@ -93,7 +91,7 @@
                         <ItemsControl x:Name="DaysList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderThickness="0,0,0,1" BorderBrush="#F1F1EC"
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#F0F1F3"
                                             Padding="8,7">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -104,10 +102,10 @@
                                                 <ColumnDefinition Width="80"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Date}"
-                                                       Foreground="#081F4B" FontSize="13"
+                                                       Foreground="#16181D" FontSize="13"
                                                        FontFamily="Segoe UI"/>
                                             <TextBlock Grid.Column="1" Text="{Binding Detail}"
-                                                       Foreground="#585858" FontSize="11.5"
+                                                       Foreground="#6B7280" FontSize="11.5"
                                                        FontFamily="Segoe UI" TextTrimming="CharacterEllipsis"/>
                                             <Border Grid.Column="2" CornerRadius="9" Padding="8,2"
                                                     Background="{Binding StatusBg}"
@@ -118,7 +116,7 @@
                                                            FontFamily="Segoe UI"/>
                                             </Border>
                                             <TextBlock Grid.Column="3" Text="{Binding Worked}"
-                                                       Foreground="#081F4B" FontSize="13"
+                                                       Foreground="#16181D" FontSize="13"
                                                        FontFamily="Consolas"
                                                        HorizontalAlignment="Right"/>
                                             <TextBlock Grid.Column="4" Text="{Binding Balance}"
@@ -138,7 +136,7 @@
                         <ItemsControl x:Name="TasksList">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border BorderThickness="0,0,0,1" BorderBrush="#F1F1EC"
+                                    <Border BorderThickness="0,0,0,1" BorderBrush="#F0F1F3"
                                             Padding="8,8">
                                         <Grid>
                                             <Grid.ColumnDefinitions>
@@ -149,23 +147,23 @@
                                                 <ColumnDefinition Width="Auto"/>
                                             </Grid.ColumnDefinitions>
                                             <TextBlock Grid.Column="0" Text="{Binding Id}"
-                                                       Foreground="#8A8A8A" FontSize="10.5"
+                                                       Foreground="#9AA0A8" FontSize="10.5"
                                                        FontFamily="Consolas" VerticalAlignment="Center"/>
                                             <StackPanel Grid.Column="1">
-                                                <TextBlock Text="{Binding Title}" Foreground="#081F4B"
+                                                <TextBlock Text="{Binding Title}" Foreground="#16181D"
                                                            FontSize="13" FontFamily="Segoe UI"/>
-                                                <TextBlock Text="{Binding Customer}" Foreground="#585858"
+                                                <TextBlock Text="{Binding Customer}" Foreground="#6B7280"
                                                            FontSize="11" FontFamily="Segoe UI"/>
                                                 <TextBlock Text="{Binding Description}"
-                                                           Foreground="#8A8A8A" FontSize="11"
+                                                           Foreground="#9AA0A8" FontSize="11"
                                                            FontFamily="Segoe UI" TextWrapping="Wrap"
                                                            Visibility="{Binding DescriptionVisible}"/>
                                             </StackPanel>
                                             <TextBlock Grid.Column="2" Text="{Binding Times}"
-                                                       Foreground="#585858" FontSize="12"
+                                                       Foreground="#6B7280" FontSize="12"
                                                        FontFamily="Consolas" VerticalAlignment="Center"/>
                                             <TextBlock Grid.Column="3" Text="{Binding Duration}"
-                                                       Foreground="#081F4B" FontSize="13"
+                                                       Foreground="#16181D" FontSize="13"
                                                        FontFamily="Consolas" VerticalAlignment="Center"
                                                        HorizontalAlignment="Right"/>
                                             <Border Grid.Column="4" BorderThickness="1" CornerRadius="2"
@@ -181,7 +179,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock x:Name="NoTasksText" Text="No activities recorded."
-                                   Foreground="#8A8A8A" FontSize="12" FontFamily="Segoe UI"
+                                   Foreground="#9AA0A8" FontSize="12" FontFamily="Segoe UI"
                                    Margin="8,8,0,0" Visibility="Collapsed"/>
                     </StackPanel>
 
@@ -206,7 +204,7 @@
                         </StackPanel>
                     </Grid>
 
-                    <TextBlock Text="Confidential · Internal use only" Foreground="#8A8A8A"
+                    <TextBlock Text="Confidential · Internal use only" Foreground="#9AA0A8"
                                FontSize="11" FontFamily="Segoe UI" Margin="0,24,0,0"
                                HorizontalAlignment="Right"/>
                 </StackPanel>

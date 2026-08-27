@@ -5,26 +5,26 @@
         WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent">
 
-    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#E4E6EA">
         <Border.Effect>
-            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+            <DropShadowEffect Color="#16181D" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
         </Border.Effect>
 
         <StackPanel>
-            <Border Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
+            <Border Height="3" Background="#F2A03D" CornerRadius="8,8,0,0"/>
 
             <StackPanel Margin="26,20,26,22" MouseLeftButtonDown="OnDrag">
-                <TextBlock Text="TIME TRACKER" Foreground="#585858" FontSize="10"
+                <TextBlock Text="TIME TRACKER" Foreground="#6B7280" FontSize="10"
                            FontWeight="SemiBold" FontFamily="Segoe UI"/>
-                <TextBlock Text="Settings" Foreground="#081F4B" FontSize="24"
+                <TextBlock Text="Settings" Foreground="#16181D" FontSize="24"
                            FontWeight="Bold" FontFamily="Segoe UI" Margin="0,2,0,2"/>
                 <TextBlock Text="These mirror what your HRMS enforces. Set them once."
-                           Foreground="#585858" FontSize="12" FontFamily="Segoe UI"
+                           Foreground="#6B7280" FontSize="12" FontFamily="Segoe UI"
                            Margin="0,0,0,20"/>
 
                 <!-- ── working hours (§1) ── -->
                 <TextBlock Text="WORKING HOURS" Style="{StaticResource SectionLabel}"/>
-                <Border Height="1" Background="#ECECE4" Margin="0,0,0,14"/>
+                <Border Height="1" Background="#E4E6EA" Margin="0,0,0,14"/>
 
                 <Grid Margin="0,0,0,4">
                     <Grid.ColumnDefinitions>
@@ -56,7 +56,7 @@
 
                 <!-- ── task tracking (§8, §9) ── -->
                 <TextBlock Text="TASK TRACKING" Style="{StaticResource SectionLabel}"/>
-                <Border Height="1" Background="#ECECE4" Margin="0,0,0,14"/>
+                <Border Height="1" Background="#E4E6EA" Margin="0,0,0,14"/>
 
                 <TextBlock Text="REMIND ME TO UPDATE MY ACTIVITY" Style="{StaticResource DialogLabel}"/>
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
@@ -75,7 +75,7 @@
 
                 <!-- ── notifications (§22) ── -->
                 <TextBlock Text="NOTIFICATIONS" Style="{StaticResource SectionLabel}"/>
-                <Border Height="1" Background="#ECECE4" Margin="0,0,0,14"/>
+                <Border Height="1" Background="#E4E6EA" Margin="0,0,0,14"/>
 
                 <CheckBox x:Name="NotifyThresholds" FontFamily="Segoe UI" FontSize="13"
                           Margin="0,0,0,8"
@@ -84,7 +84,7 @@
                           Margin="0,0,0,20"
                           Content="Remind me to review the day before I finish"/>
 
-                <TextBlock x:Name="ErrorText" Foreground="#C62828" FontSize="12"
+                <TextBlock x:Name="ErrorText" Foreground="#C0392B" FontSize="12"
                            FontFamily="Segoe UI" Margin="0,0,0,10" Visibility="Collapsed"
                            TextWrapping="Wrap"/>
 
@@ -100,7 +100,6 @@
                 </Grid>
             </StackPanel>
 
-            <Border Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
         </StackPanel>
     </Border>
 </Window>

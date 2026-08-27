@@ -1,13 +1,14 @@
 <#
 .SYNOPSIS
-    Generates src\TimeTracker.App\app.ico from the Kale mark.
+    Generates src\TimeTracker.App\app.ico.
 
 .DESCRIPTION
-    Run once; the .ico is committed. Kept as a script rather than a binary blob nobody
-    can regenerate — if the mark changes, this is the thing to re-run.
+    The mark is a disc with a quarter bitten out of it — a day partly done. It is the
+    same idea the widget's progress bar shows, at icon scale, and it stays legible at
+    16px where anything more detailed turns to mush.
 
-    The mark geometry comes from the brand logo SVG. It is drawn rather than traced from
-    a raster so the small sizes stay crisp.
+    Run once; the .ico is committed. Kept as a script rather than an opaque binary so
+    the mark can be changed by editing something readable.
 #>
 [CmdletBinding()]
 param(
@@ -17,16 +18,9 @@ param(
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
 
-# Kale "Noon" orange. Never altered — it is the one brand colour on the icon.
-$noon = [System.Drawing.Color]::FromArgb(255, 235, 74, 38)
-
-# The two chevrons of the Kale mark, in the SVG's own 172.5 x 142.12 coordinate space.
-$upper = @(
-    82,42, 43,80, 53,80, 105,132, 105,142, 66,142, 0,75, 39,36, 82,36
-)
-$lower = @(
-    148,51, 172,75, 132,115, 89,115, 89,110, 128,70, 118,70, 59,11, 59,0, 96,0
-)
+# The one accent colour. Amber survives on both dark and light grounds, which a tray
+# icon has to do — it sits on whatever taskbar theme the user happens to run.
+$amber = [System.Drawing.Color]::FromArgb(255, 242, 160, 61)
 
 function New-MarkBitmap {
     param([int] $Size)
@@ -34,36 +28,25 @@ function New-MarkBitmap {
     $bmp = New-Object System.Drawing.Bitmap($Size, $Size,
         [System.Drawing.Imaging.PixelFormat]::Format32bppArgb)
     $g = [System.Drawing.Graphics]::FromImage($bmp)
-    $g.SmoothingMode     = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
-    $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+    $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
     $g.Clear([System.Drawing.Color]::Transparent)
 
-    # Fit the 172.5 x 142.12 artwork into the square with a little breathing room.
-    $pad   = [Math]::Max(1, [int]($Size * 0.08))
-    $scale = [Math]::Min(($Size - 2 * $pad) / 172.5, ($Size - 2 * $pad) / 142.12)
-    $offX  = ($Size - 172.5 * $scale) / 2
-    $offY  = ($Size - 142.12 * $scale) / 2
+    $pad = [Math]::Max(1, [int]($Size * 0.10))
+    $box = New-Object System.Drawing.Rectangle(
+        $pad, $pad, ($Size - 2 * $pad), ($Size - 2 * $pad))
 
-    $brush = New-Object System.Drawing.SolidBrush($noon)
-    foreach ($shape in @($upper, $lower)) {
-        $points = New-Object 'System.Collections.Generic.List[System.Drawing.PointF]'
-        for ($i = 0; $i -lt $shape.Count; $i += 2) {
-            $points.Add((New-Object System.Drawing.PointF(
-                [float]($offX + $shape[$i] * $scale),
-                [float]($offY + $shape[$i + 1] * $scale))))
-        }
-        $g.FillPolygon($brush, $points.ToArray())
-    }
+    # GDI+ angles run clockwise from 3 o'clock. Sweeping 0 to 270 fills three quarters
+    # and leaves the top-right quadrant open.
+    $brush = New-Object System.Drawing.SolidBrush($amber)
+    $g.FillPie($brush, $box, 0, 270)
 
     $brush.Dispose(); $g.Dispose()
     return $bmp
 }
 
-# Frames are written as classic DIB (BITMAPINFOHEADER + BGRA + AND mask), not PNG.
-# PNG-encoded entries are smaller and Windows Explorer reads them, but the managed
-# System.Drawing.Icon decoder does not — and that is what NotifyIcon and any tooling that
-# inspects the icon go through. A tray icon that silently fails to load is exactly the
-# defect being fixed here, so compatibility wins over file size.
+# Frames are classic DIB, not PNG. The managed System.Drawing.Icon decoder cannot read
+# PNG-encoded ICO entries, and that is what NotifyIcon goes through — a tray icon that
+# silently fails to load is exactly the defect this file exists to avoid.
 function ConvertTo-DibFrame {
     param([System.Drawing.Bitmap] $Bitmap)
 
@@ -88,8 +71,7 @@ function ConvertTo-DibFrame {
 
     # AND mask: 1bpp, rows padded to 4 bytes. All zero — the alpha channel does the work.
     $maskRow = [Math]::Floor(($w + 31) / 32) * 4
-    $blank = New-Object Byte[] ($maskRow * $h)
-    $bw.Write($blank)
+    $bw.Write((New-Object Byte[] ($maskRow * $h)))
 
     $bw.Flush()
     $bytes = $ms.ToArray()
@@ -114,20 +96,15 @@ $out = New-Object System.IO.MemoryStream
 $w = New-Object System.IO.BinaryWriter($out)
 
 # ICONDIR
-$w.Write([UInt16]0)               # reserved
-$w.Write([UInt16]1)               # type: 1 = icon
-$w.Write([UInt16]$frames.Count)
+$w.Write([UInt16]0); $w.Write([UInt16]1); $w.Write([UInt16]$frames.Count)
 
-# ICONDIRENTRY table. Offsets follow the whole table, hence the running total.
+# ICONDIRENTRY table. Image offsets follow the whole table, hence the running total.
 $offset = 6 + (16 * $frames.Count)
 foreach ($f in $frames) {
     $dim = if ($f.Size -ge 256) { 0 } else { $f.Size }   # 0 means 256 in this format
-    $w.Write([Byte]$dim)          # width
-    $w.Write([Byte]$dim)          # height
-    $w.Write([Byte]0)             # palette count
-    $w.Write([Byte]0)             # reserved
-    $w.Write([UInt16]1)           # colour planes
-    $w.Write([UInt16]32)          # bits per pixel
+    $w.Write([Byte]$dim); $w.Write([Byte]$dim)
+    $w.Write([Byte]0);    $w.Write([Byte]0)
+    $w.Write([UInt16]1);  $w.Write([UInt16]32)
     $w.Write([UInt32] ([Byte[]] $f.Bytes).Length)
     $w.Write([UInt32]$offset)
     $offset += ([Byte[]] $f.Bytes).Length

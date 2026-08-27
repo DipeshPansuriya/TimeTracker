@@ -211,7 +211,7 @@ public partial class App : System.Windows.Application
         _tray.DoubleClick += (_, _) => ShowWidget();
     }
 
-    /// <summary>The embedded Kale mark, at the size the tray actually wants.</summary>
+    /// <summary>The embedded app mark, at the size the tray actually wants.</summary>
     /// <remarks>
     /// Asking for <c>SystemInformation.SmallIconSize</c> matters: the .ico carries several
     /// frames, and letting the runtime choose yields a scaled-down 32px frame that looks

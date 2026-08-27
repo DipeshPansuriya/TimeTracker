@@ -38,7 +38,7 @@ public partial class ReviewWindow : Window
         WorkedText.Text = Hhmm(summary.Worked);
         RequiredText.Text = Hhmm(summary.Required);
 
-        // Colour encodes state and nothing else — a neutral figure stays Deep Sea. Reset
+        // Colour encodes state and nothing else — a neutral figure stays graphite. Reset
         // first, because Render runs repeatedly and a card painted green once would stay
         // green after an edit made it wrong.
         ResetCard(KpiWorked, WorkedText);
@@ -49,14 +49,14 @@ public partial class ReviewWindow : Window
         {
             BalanceKey.Text = "OVERTIME";
             BalanceText.Text = "+" + Hhmm(summary.Worked - summary.Required);
-            Paint(KpiBalance, BalanceText, "#2E7D32");
-            Paint(KpiWorked, WorkedText, "#2E7D32");
+            Paint(KpiBalance, BalanceText, "#2E7D5B");
+            Paint(KpiWorked, WorkedText, "#2E7D5B");
         }
         else
         {
             BalanceKey.Text = "SHORTFALL";
             BalanceText.Text = "-" + Hhmm(summary.Required - summary.Worked);
-            Paint(KpiBalance, BalanceText, "#E65100");
+            Paint(KpiBalance, BalanceText, "#B4671F");
         }
 
         StatusText.Text = summary.Completion switch
@@ -68,7 +68,7 @@ public partial class ReviewWindow : Window
         };
 
         if (summary.Completion == DayCompletion.FullDayComplete)
-            Paint(KpiStatus, StatusText, "#2E7D32");
+            Paint(KpiStatus, StatusText, "#2E7D5B");
 
         TaskList.ItemsSource = _model.Log.Activities
             .Select(a => new ActivityRow(
@@ -129,7 +129,7 @@ public partial class ReviewWindow : Window
 
     private static void ResetCard(Border card, TextBlock text)
     {
-        var navy = (System.Windows.Media.Brush)new BrushConverter().ConvertFrom("#081F4B")!;
+        var navy = (System.Windows.Media.Brush)new BrushConverter().ConvertFrom("#16181D")!;
         card.BorderBrush = navy;
         text.Foreground = navy;
     }

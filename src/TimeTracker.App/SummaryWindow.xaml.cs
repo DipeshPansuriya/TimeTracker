@@ -81,7 +81,7 @@ public partial class SummaryWindow : Window
 
     private void RenderKpis(PeriodSummary period, IReadOnlyList<DaySummary> days)
     {
-        const string navy = "#081F4B", green = "#2E7D32", amber = "#E65100", blue = "#3B97FF";
+        const string navy = "#16181D", green = "#2E7D5B", amber = "#B4671F", blue = "#3A6EA5";
         var kpis = new List<Kpi>();
 
         if (_period == Period.Day)
@@ -163,11 +163,11 @@ public partial class SummaryWindow : Window
                 Date: d.Date.ToString("ddd d MMM"),
                 Detail: customers + (d.ClientVisit ? "  ·  client visit" : ""),
                 Status: StatusWord(d.Completion),
-                StatusBg: d.Completion == DayCompletion.FullDayComplete ? "#E8F5E9" : "#FFF3E0",
-                StatusFg: d.Completion == DayCompletion.FullDayComplete ? "#2E7D32" : "#E65100",
+                StatusBg: d.Completion == DayCompletion.FullDayComplete ? "#E9F5EF" : "#FDF3E6",
+                StatusFg: d.Completion == DayCompletion.FullDayComplete ? "#2E7D5B" : "#B4671F",
                 Worked: Hhmm(d.Worked),
                 Balance: (over ? "+" : "-") + Hhmm(balance),
-                BalanceFg: over ? "#2E7D32" : "#E65100");
+                BalanceFg: over ? "#2E7D5B" : "#B4671F");
         }).ToList();
     }
 
@@ -204,11 +204,11 @@ public partial class SummaryWindow : Window
             Status: a.Status.ToString(),
             StatusFg: a.Status switch
             {
-                ActivityStatus.Completed => "#2E7D32",
-                ActivityStatus.InProgress => "#3B97FF",
-                ActivityStatus.OnHold or ActivityStatus.Blocked => "#E65100",
-                ActivityStatus.Cancelled => "#C62828",
-                _ => "#585858"
+                ActivityStatus.Completed => "#2E7D5B",
+                ActivityStatus.InProgress => "#3A6EA5",
+                ActivityStatus.OnHold or ActivityStatus.Blocked => "#B4671F",
+                ActivityStatus.Cancelled => "#C0392B",
+                _ => "#6B7280"
             })).ToList();
 
         TasksList.ItemsSource = rows;

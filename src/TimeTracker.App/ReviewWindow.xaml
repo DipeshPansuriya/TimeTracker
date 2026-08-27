@@ -5,51 +5,51 @@
         WindowStartupLocation="CenterOwner" ShowInTaskbar="False"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent">
 
-    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#E4E6EA">
         <Border.Effect>
-            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+            <DropShadowEffect Color="#16181D" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
         </Border.Effect>
 
         <StackPanel>
-            <Border Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
+            <Border Height="3" Background="#F2A03D" CornerRadius="8,8,0,0"/>
 
             <StackPanel Margin="24,20,24,22">
-                <TextBlock Text="Review today" Foreground="#081F4B"
+                <TextBlock Text="Review today" Foreground="#16181D"
                            FontSize="20" FontWeight="Bold" FontFamily="Segoe UI"/>
-                <TextBlock x:Name="SubText" Foreground="#585858" FontSize="12"
+                <TextBlock x:Name="SubText" Foreground="#6B7280" FontSize="12"
                            FontFamily="Segoe UI" Margin="0,4,0,18"/>
 
-                <!-- KPI stripe. Colour encodes state only: neutral figures stay Deep Sea. -->
+                <!-- KPI stripe. Colour encodes state only: neutral figures stay graphite. -->
                 <UniformGrid Columns="4" Margin="0,0,0,18">
-                    <Border x:Name="KpiWorked" BorderThickness="0,3,0,0" BorderBrush="#081F4B"
-                            Background="#FAFAF7" Padding="10,8" Margin="0,0,6,0">
+                    <Border x:Name="KpiWorked" BorderThickness="0,3,0,0" BorderBrush="#16181D"
+                            Background="#F7F8F9" Padding="10,8" Margin="0,0,6,0">
                         <StackPanel>
                             <TextBlock Text="WORKED" Style="{StaticResource DialogLabel}"/>
-                            <TextBlock x:Name="WorkedText" Foreground="#081F4B" FontSize="18"
+                            <TextBlock x:Name="WorkedText" Foreground="#16181D" FontSize="18"
                                        FontFamily="Consolas"/>
                         </StackPanel>
                     </Border>
-                    <Border BorderThickness="0,3,0,0" BorderBrush="#081F4B"
-                            Background="#FAFAF7" Padding="10,8" Margin="3,0">
+                    <Border BorderThickness="0,3,0,0" BorderBrush="#16181D"
+                            Background="#F7F8F9" Padding="10,8" Margin="3,0">
                         <StackPanel>
                             <TextBlock Text="REQUIRED" Style="{StaticResource DialogLabel}"/>
-                            <TextBlock x:Name="RequiredText" Foreground="#081F4B" FontSize="18"
+                            <TextBlock x:Name="RequiredText" Foreground="#16181D" FontSize="18"
                                        FontFamily="Consolas"/>
                         </StackPanel>
                     </Border>
-                    <Border x:Name="KpiBalance" BorderThickness="0,3,0,0" BorderBrush="#081F4B"
-                            Background="#FAFAF7" Padding="10,8" Margin="3,0">
+                    <Border x:Name="KpiBalance" BorderThickness="0,3,0,0" BorderBrush="#16181D"
+                            Background="#F7F8F9" Padding="10,8" Margin="3,0">
                         <StackPanel>
                             <TextBlock x:Name="BalanceKey" Text="BALANCE" Style="{StaticResource DialogLabel}"/>
-                            <TextBlock x:Name="BalanceText" Foreground="#081F4B" FontSize="18"
+                            <TextBlock x:Name="BalanceText" Foreground="#16181D" FontSize="18"
                                        FontFamily="Consolas"/>
                         </StackPanel>
                     </Border>
-                    <Border x:Name="KpiStatus" BorderThickness="0,3,0,0" BorderBrush="#081F4B"
-                            Background="#FAFAF7" Padding="10,8" Margin="6,0,0,0">
+                    <Border x:Name="KpiStatus" BorderThickness="0,3,0,0" BorderBrush="#16181D"
+                            Background="#F7F8F9" Padding="10,8" Margin="6,0,0,0">
                         <StackPanel>
                             <TextBlock Text="STATUS" Style="{StaticResource DialogLabel}"/>
-                            <TextBlock x:Name="StatusText" Foreground="#081F4B" FontSize="14"
+                            <TextBlock x:Name="StatusText" Foreground="#16181D" FontSize="14"
                                        FontWeight="SemiBold" FontFamily="Segoe UI"
                                        TextWrapping="Wrap"/>
                         </StackPanel>
@@ -75,17 +75,17 @@
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="{Binding Title}" Foreground="#081F4B"
+                                        <TextBlock Text="{Binding Title}" Foreground="#16181D"
                                                    FontSize="13" FontFamily="Segoe UI"/>
-                                        <TextBlock Text="{Binding Customer}" Foreground="#585858"
+                                        <TextBlock Text="{Binding Customer}" Foreground="#6B7280"
                                                    FontSize="11" FontFamily="Segoe UI"/>
                                     </StackPanel>
                                     <TextBlock Grid.Column="1" Text="{Binding Times}"
-                                               Foreground="#585858" FontSize="12"
+                                               Foreground="#6B7280" FontSize="12"
                                                FontFamily="Consolas" VerticalAlignment="Center"
                                                Margin="0,0,14,0"/>
                                     <TextBlock Grid.Column="2" Text="{Binding Duration}"
-                                               Foreground="#081F4B" FontSize="13"
+                                               Foreground="#16181D" FontSize="13"
                                                FontFamily="Consolas" VerticalAlignment="Center"/>
                                 </Grid>
                             </Button>
@@ -94,13 +94,13 @@
                 </ItemsControl>
 
                 <!-- Only shown when something is actually missing (§23). -->
-                <Border x:Name="GapPanel" BorderThickness="4,1,1,1" BorderBrush="#E65100"
-                        Background="#FFF3E0" Padding="12,10" Margin="0,0,0,16"
+                <Border x:Name="GapPanel" BorderThickness="4,1,1,1" BorderBrush="#B4671F"
+                        Background="#FDF3E6" Padding="12,10" Margin="0,0,0,16"
                         Visibility="Collapsed">
                     <StackPanel>
-                        <TextBlock Text="Missing information" Foreground="#081F4B"
+                        <TextBlock Text="Missing information" Foreground="#16181D"
                                    FontSize="13" FontWeight="SemiBold" FontFamily="Segoe UI"/>
-                        <TextBlock x:Name="GapText" Foreground="#202020" FontSize="12"
+                        <TextBlock x:Name="GapText" Foreground="#16181D" FontSize="12"
                                    FontFamily="Segoe UI" TextWrapping="Wrap" Margin="0,3,0,0"/>
                     </StackPanel>
                 </Border>
@@ -113,7 +113,6 @@
                 </StackPanel>
             </StackPanel>
 
-            <Border Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
         </StackPanel>
     </Border>
 </Window>

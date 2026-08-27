@@ -6,22 +6,25 @@
         Topmost="True" ShowInTaskbar="False" ResizeMode="NoResize"
         MouseLeftButtonDown="OnDrag">
 
-    <Border Background="#081F4B" CornerRadius="8" BorderThickness="1" BorderBrush="#3876CBFF">
+    <Border Background="#16181D" CornerRadius="8" BorderThickness="1" BorderBrush="#2E333C">
         <Border.Effect>
             <DropShadowEffect Color="Black" BlurRadius="24" ShadowDepth="4" Opacity="0.45"/>
         </Border.Effect>
 
         <StackPanel>
-            <Border Background="#0DFFFFFF" CornerRadius="8,8,0,0" Padding="14,10"
-                    BorderThickness="0,0,0,1" BorderBrush="#2876CBFF">
+            <Border Background="#1E2128" CornerRadius="8,8,0,0" Padding="14,10"
+                    BorderThickness="0,0,0,1" BorderBrush="#2E333C">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Path Grid.Column="0" Width="14" Height="14" Stretch="Uniform" Fill="#EB4A26"
-                          Data="M 82,42 L 43,80 L 53,80 L 105,132 L 105,142 L 66,142 L 0,75 L 39,36 L 82,36 Z M 148,51 L 172,75 L 132,115 L 89,115 L 89,110 L 128,70 L 118,70 L 59,11 L 59,0 L 96,0 Z"/>
+                    <!-- Three quarters of a disc: a day partly done, the same idea the progress
+                         bar below shows. Arc runs from 3 o'clock clockwise to 12, leaving
+                         the top-right quadrant open. -->
+                    <Path Grid.Column="0" Width="13" Height="13" Stretch="Uniform"
+                          Fill="#F2A03D" Data="M 16,8 A 8,8 0 1 1 8,0 L 8,8 Z"/>
                     <TextBlock Grid.Column="1" Text="Time tracker" Foreground="White"
                                FontFamily="Segoe UI" FontSize="12" FontWeight="SemiBold"
                                Margin="9,0,0,0" VerticalAlignment="Center"/>
@@ -49,9 +52,9 @@
                         <TextBlock Text="{Binding StateText}" Foreground="White" FontSize="13"
                                    FontWeight="SemiBold" Margin="8,0,0,0" FontFamily="Segoe UI"/>
                     </StackPanel>
-                    <Border HorizontalAlignment="Right" Background="#76CBFF" CornerRadius="9"
+                    <Border HorizontalAlignment="Right" Background="#F2A03D" CornerRadius="9"
                             Padding="7,2">
-                        <TextBlock Text="{Binding LocationText}" Foreground="#081F4B" FontSize="9"
+                        <TextBlock Text="{Binding LocationText}" Foreground="#16181D" FontSize="9"
                                    FontWeight="Bold" FontFamily="Segoe UI"/>
                     </Border>
                 </Grid>
@@ -76,10 +79,10 @@
                 </Grid>
 
                 <Grid Height="7" Margin="0,13,0,4">
-                    <Border Background="#1FFFFFFF" CornerRadius="4"/>
+                    <Border Background="#2A2E36" CornerRadius="4"/>
                     <ProgressBar Value="{Binding ProgressPercent, Mode=OneWay}" Maximum="100"
                                  Background="Transparent" BorderThickness="0"
-                                 Foreground="#76CBFF" Height="7"/>
+                                 Foreground="#F2A03D" Height="7"/>
                 </Grid>
                 <Grid Margin="0,0,0,13">
                     <TextBlock Text="0:00" Style="{StaticResource Scale}" HorizontalAlignment="Left"/>
@@ -87,18 +90,18 @@
                     <TextBlock Text="Full day" Style="{StaticResource Scale}" HorizontalAlignment="Right"/>
                 </Grid>
 
-                <Border BorderThickness="3,1,1,1" BorderBrush="#76CBFF" CornerRadius="4"
-                        Background="#0DFFFFFF" Padding="10,8" Margin="0,0,0,13">
+                <Border BorderThickness="3,1,1,1" BorderBrush="#F2A03D" CornerRadius="4"
+                        Background="#1E2128" Padding="10,8" Margin="0,0,0,13">
                     <StackPanel>
-                        <TextBlock Text="CURRENT TASK" Foreground="#CC76CBFF" FontSize="9"
+                        <TextBlock Text="CURRENT TASK" Foreground="#8A9099" FontSize="9"
                                    FontFamily="Segoe UI" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding CurrentTaskTitle}" Foreground="White"
                                    FontSize="12.5" TextWrapping="Wrap" Margin="0,3,0,0"
                                    FontFamily="Segoe UI"/>
                         <Grid Margin="0,5,0,0">
-                            <TextBlock Text="{Binding CurrentTaskCustomer}" Foreground="#76CBFF"
+                            <TextBlock Text="{Binding CurrentTaskCustomer}" Foreground="#F2A03D"
                                        FontSize="10.5" FontFamily="Consolas"/>
-                            <TextBlock Text="{Binding CurrentTaskDuration}" Foreground="#76CBFF"
+                            <TextBlock Text="{Binding CurrentTaskDuration}" Foreground="#F2A03D"
                                        FontSize="10.5" FontFamily="Consolas"
                                        HorizontalAlignment="Right"/>
                         </Grid>
@@ -114,7 +117,7 @@
                             Style="{StaticResource Ghost}" Margin="3,0,0,0"/>
                 </UniformGrid>
 
-                <Border BorderThickness="0,1,0,0" BorderBrush="#2876CBFF" Padding="0,11,0,0">
+                <Border BorderThickness="0,1,0,0" BorderBrush="#2E333C" Padding="0,11,0,0">
                     <UniformGrid Columns="3">
                         <Button Click="OnOpenSummary" Style="{StaticResource FooterButton}"
                                 ToolTip="Open the full report">

@@ -4,19 +4,46 @@
              ShutdownMode="OnExplicitShutdown">
     <Application.Resources>
 
-        <!-- Kale "Deep Sea" identity. The widget sits on Deep Sea navy, so Noon orange
-             appears only as the logo mark: the brand forbids it on dark navy. Colour is
-             otherwise reserved for genuine status. -->
+        <!--
+            Graphite and amber.
 
+            One accent, used only where something is genuinely interactive or in progress.
+            Everything else is graphite or grey, and colour beyond that is reserved for real
+            status: green for a target met, orange for a shortfall, red for an error. A tool
+            that sits on screen all day should be quiet until it has something to say.
+
+            The widget is dark because it floats over whatever else is running; dialogs and
+            reports are light because they are read, not glanced at.
+        -->
+
+        <!-- ── palette ── -->
+        <Color x:Key="PanelColor">#16181D</Color>
+        <Color x:Key="AccentColor">#F2A03D</Color>
+
+        <SolidColorBrush x:Key="Panel"        Color="#16181D"/>
+        <SolidColorBrush x:Key="PanelRaised"  Color="#1E2128"/>
+        <SolidColorBrush x:Key="PanelLine"    Color="#2E333C"/>
+        <SolidColorBrush x:Key="Accent"       Color="#F2A03D"/>
+        <SolidColorBrush x:Key="AccentSoft"   Color="#33F2A03D"/>
+        <SolidColorBrush x:Key="OnPanel"      Color="#E8EAED"/>
+        <SolidColorBrush x:Key="OnPanelMuted" Color="#8A9099"/>
+
+        <SolidColorBrush x:Key="Surface"      Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="SurfaceAlt"   Color="#F7F8F9"/>
+        <SolidColorBrush x:Key="Hairline"     Color="#E4E6EA"/>
+        <SolidColorBrush x:Key="Ink"          Color="#16181D"/>
+        <SolidColorBrush x:Key="InkMuted"     Color="#6B7280"/>
+
+        <!-- ── widget rows ── -->
         <Style x:Key="Key" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#76CBFF"/>
+            <Setter Property="Foreground" Value="{StaticResource OnPanelMuted}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
         <Style x:Key="Val" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource OnPanel}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Consolas"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
@@ -24,35 +51,34 @@
         </Style>
 
         <Style x:Key="ValBig" TargetType="TextBlock" BasedOn="{StaticResource Val}">
-            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontSize" Value="16"/>
         </Style>
 
         <Style x:Key="Scale" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#BF76CBFF"/>
+            <Setter Property="Foreground" Value="#6E747D"/>
             <Setter Property="FontSize" Value="9"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
         </Style>
 
         <Style x:Key="FootKey" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#CC76CBFF"/>
+            <Setter Property="Foreground" Value="{StaticResource OnPanelMuted}"/>
             <Setter Property="FontSize" Value="9"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <Style x:Key="FootVal" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource OnPanel}"/>
             <Setter Property="FontSize" Value="12.5"/>
             <Setter Property="FontFamily" Value="Consolas"/>
             <Setter Property="Margin" Value="0,2,0,0"/>
         </Style>
 
-        <!-- Buttons: square-ish corners and understated hover, per the brand's
-             "engineered, not consumer" note. -->
+        <!-- ── buttons on the dark panel ── -->
         <Style x:Key="Ghost" TargetType="Button">
-            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Foreground" Value="{StaticResource OnPanel}"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="#4D76CBFF"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PanelLine}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
@@ -69,8 +95,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#2476CBFF"/>
-                                <Setter TargetName="Bd" Property="BorderBrush" Value="#76CBFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#262A32"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#454B56"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter TargetName="Bd" Property="Opacity" Value="0.35"/>
@@ -81,11 +107,17 @@
             </Setter>
         </Style>
 
-        <!-- Title-bar affordance. Borderless so it reads as chrome rather than an action,
-             but it is a real Button so it takes keyboard focus and swallows its own click
-             instead of letting the window start a drag. -->
+        <!-- The one filled control on the widget. Amber earns its place by marking the
+             action you are most likely to want. -->
+        <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource Ghost}">
+            <Setter Property="Foreground" Value="#16181D"/>
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
         <Style x:Key="TitleBarButton" TargetType="Button">
-            <Setter Property="Foreground" Value="#AA76CBFF"/>
+            <Setter Property="Foreground" Value="{StaticResource OnPanelMuted}"/>
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="FontSize" Value="10"/>
@@ -102,8 +134,8 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#2476CBFF"/>
-                                <Setter Property="Foreground" Value="#76CBFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#262A32"/>
+                                <Setter Property="Foreground" Value="{StaticResource Accent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -111,47 +143,6 @@
             </Setter>
         </Style>
 
-        <!-- A list row that happens to be clickable. Flat until hovered, so the list reads
-             as data rather than a column of buttons, but it is a real Button so it takes
-             keyboard focus and announces itself. -->
-        <Style x:Key="RowButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="0,0,0,1"/>
-            <Setter Property="BorderBrush" Value="#F1F1EC"/>
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="8,7"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                Padding="{TemplateBinding Padding}" CornerRadius="4">
-                            <ContentPresenter HorizontalAlignment="Stretch"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#F3F7FC"/>
-                            </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#F3F7FC"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource Ghost}">
-            <Setter Property="Foreground" Value="#081F4B"/>
-            <Setter Property="Background" Value="#76CBFF"/>
-            <Setter Property="BorderBrush" Value="#76CBFF"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-
-        <!-- The widget footer totals double as the way into the report. They looked like
-             labels before, which is why nobody could find the weekly view. -->
         <Style x:Key="FooterButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -167,7 +158,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#2476CBFF"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#262A32"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -175,9 +166,9 @@
             </Setter>
         </Style>
 
-        <!-- Report surfaces. Section labels are the technical voice: uppercase, tracked. -->
+        <!-- ── light surfaces: dialogs and reports ── -->
         <Style x:Key="SectionLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#081F4B"/>
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
             <Setter Property="FontSize" Value="10.5"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontWeight" Value="Bold"/>
@@ -185,7 +176,7 @@
         </Style>
 
         <Style x:Key="PeriodTab" TargetType="RadioButton">
-            <Setter Property="Foreground" Value="#585858"/>
+            <Setter Property="Foreground" Value="{StaticResource InkMuted}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -200,12 +191,13 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#F3F7FC"/>
+                                <Setter TargetName="Bd" Property="Background" Value="#F1F2F4"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter Property="Foreground" Value="#081F4B"/>
+                                <Setter Property="Foreground" Value="{StaticResource Ink}"/>
                                 <Setter Property="FontWeight" Value="SemiBold"/>
-                                <Setter TargetName="Bd" Property="BorderBrush" Value="#EB4A26"/>
+                                <Setter TargetName="Bd" Property="BorderBrush"
+                                        Value="{StaticResource Accent}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -222,23 +214,52 @@
                     <ColumnDefinition Width="70"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                    <TextBlock Text="{Binding Name}" Foreground="#081F4B" FontSize="12.5"
-                               FontFamily="Segoe UI" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding Name}" Foreground="{StaticResource Ink}"
+                               FontSize="12.5" FontFamily="Segoe UI"
+                               TextTrimming="CharacterEllipsis"/>
                     <Grid Height="6" Margin="0,4,0,0" HorizontalAlignment="Stretch">
-                        <Border Background="#F1F1EC" CornerRadius="3"/>
-                        <Border Background="#3B97FF" CornerRadius="3"
+                        <Border Background="#EDEEF1" CornerRadius="3"/>
+                        <Border Background="{StaticResource Accent}" CornerRadius="3"
                                 HorizontalAlignment="Left" Width="{Binding BarWidth}"/>
                     </Grid>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="{Binding Hours}" Foreground="#081F4B"
+                <TextBlock Grid.Column="1" Text="{Binding Hours}" Foreground="{StaticResource Ink}"
                            FontSize="13" FontFamily="Consolas" HorizontalAlignment="Right"
                            VerticalAlignment="Top"/>
             </Grid>
         </DataTemplate>
 
-        <!-- Dialogs sit on the light brand ground, unlike the widget. -->
+        <Style x:Key="RowButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+            <Setter Property="BorderBrush" Value="#F0F1F3"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Padding" Value="8,7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                Padding="{TemplateBinding Padding}" CornerRadius="4">
+                            <ContentPresenter HorizontalAlignment="Stretch"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#FBF4EA"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#FBF4EA"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="DialogLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="#585858"/>
+            <Setter Property="Foreground" Value="{StaticResource InkMuted}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
@@ -249,24 +270,55 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Padding" Value="8,6"/>
-            <Setter Property="BorderBrush" Value="#ECECE4"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
             <Setter Property="Margin" Value="0,0,0,14"/>
         </Style>
 
-        <Style x:Key="DialogPrimary" TargetType="Button" BasedOn="{StaticResource Ghost}">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#081F4B"/>
-            <Setter Property="BorderBrush" Value="#081F4B"/>
+        <!-- Buttons on light surfaces get their own template rather than inheriting Ghost:
+             Ghost's hover states are tuned for the dark panel and would flash near-black on
+             a white dialog. -->
+        <Style x:Key="DialogButtonBase" TargetType="Button">
             <Setter Property="FontSize" Value="12.5"/>
+            <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="Padding" Value="16,8"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.86"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DialogPrimary" TargetType="Button"
+               BasedOn="{StaticResource DialogButtonBase}">
+            <Setter Property="Foreground" Value="#16181D"/>
+            <Setter Property="Background" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
-        <Style x:Key="DialogGhost" TargetType="Button" BasedOn="{StaticResource Ghost}">
-            <Setter Property="Foreground" Value="#081F4B"/>
-            <Setter Property="BorderBrush" Value="#ECECE4"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="Padding" Value="16,8"/>
+        <Style x:Key="DialogGhost" TargetType="Button"
+               BasedOn="{StaticResource DialogButtonBase}">
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
+            <Setter Property="Background" Value="{StaticResource Surface}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Hairline}"/>
         </Style>
 
     </Application.Resources>

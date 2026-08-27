@@ -5,20 +5,19 @@
         WindowStartupLocation="CenterScreen" ShowInTaskbar="False"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent">
 
-    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#E4E6EA">
         <Border.Effect>
-            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+            <DropShadowEffect Color="#16181D" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
         </Border.Effect>
 
         <StackPanel>
-            <!-- The container signature: 4px Deep Sea rule across the top. -->
-            <Border Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
+            <Border Height="3" Background="#F2A03D" CornerRadius="8,8,0,0"/>
 
             <StackPanel Margin="24,20,24,22">
-                <TextBlock x:Name="TitleText" Text="Good morning" Foreground="#081F4B"
+                <TextBlock x:Name="TitleText" Text="Good morning" Foreground="#16181D"
                            FontSize="20" FontWeight="Bold" FontFamily="Segoe UI"/>
                 <TextBlock x:Name="QuestionText" Text="What time did you start working?"
-                           Foreground="#585858" FontSize="13" FontFamily="Segoe UI"
+                           Foreground="#6B7280" FontSize="13" FontFamily="Segoe UI"
                            Margin="0,4,0,18" TextWrapping="Wrap"/>
 
                 <TextBlock Text="START TIME" Style="{StaticResource DialogLabel}"/>
@@ -37,7 +36,7 @@
                     </UniformGrid>
                 </StackPanel>
 
-                <TextBlock x:Name="ErrorText" Foreground="#C62828" FontSize="12"
+                <TextBlock x:Name="ErrorText" Foreground="#C0392B" FontSize="12"
                            FontFamily="Segoe UI" Margin="0,0,0,10" Visibility="Collapsed"
                            TextWrapping="Wrap"/>
 
@@ -49,7 +48,6 @@
                 </StackPanel>
             </StackPanel>
 
-            <Border Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
         </StackPanel>
     </Border>
 </Window>
