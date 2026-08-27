@@ -16,7 +16,12 @@ public partial class EditActivityWindow : Window
     private readonly bool _dayMode;
 
     /// <summary>Edit a recorded activity.</summary>
-    public EditActivityWindow(Activity activity)
+    /// <param name="statuses">
+    /// The statuses the user has chosen to use (§9). The activity's own status is always
+    /// included even if it has since been switched off — otherwise editing an old record
+    /// would silently change its status.
+    /// </param>
+    public EditActivityWindow(Activity activity, IReadOnlyList<ActivityStatus>? statuses = null)
     {
         InitializeComponent();
         _activity = activity;
@@ -40,7 +45,9 @@ public partial class EditActivityWindow : Window
             EndBox.Text = string.Empty;
         }
 
-        StatusBox.ItemsSource = Enum.GetValues<ActivityStatus>();
+        var offered = (statuses ?? [.. Enum.GetValues<ActivityStatus>()]).ToList();
+        if (!offered.Contains(activity.Status)) offered.Insert(0, activity.Status);
+        StatusBox.ItemsSource = offered;
         StatusBox.SelectedItem = activity.Status;
 
         Loaded += (_, _) => { TitleBox.Focus(); TitleBox.SelectAll(); };

@@ -58,6 +58,15 @@ public sealed record WorkingHoursPolicy(
             DefaultStart: Start(get("default_start")));
     }
 
+    /// <summary>Key/value pairs to persist. Paired with <see cref="FromConfig"/>.</summary>
+    public IEnumerable<(string Key, string Value)> ToConfig()
+    {
+        yield return ("half_day", HalfDay.ToString(@"hh\:mm", CultureInfo.InvariantCulture));
+        yield return ("full_day", FullDay.ToString(@"hh\:mm", CultureInfo.InvariantCulture));
+        yield return ("default_start", DefaultStart.ToString("HH:mm", CultureInfo.InvariantCulture));
+        yield return ("working_days", string.Join(',', WorkingDays));
+    }
+
     private static TimeSpan Span(string? value, TimeSpan fallback)
         => TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out var parsed)
             ? parsed : fallback;

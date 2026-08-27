@@ -1,0 +1,106 @@
+<Window x:Class="TimeTracker.App.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings" Width="560" SizeToContent="Height" ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent">
+
+    <Border Background="White" CornerRadius="8" BorderThickness="1" BorderBrush="#ECECE4">
+        <Border.Effect>
+            <DropShadowEffect Color="#081F4B" BlurRadius="28" ShadowDepth="6" Opacity="0.22"/>
+        </Border.Effect>
+
+        <StackPanel>
+            <Border Height="4" Background="#081F4B" CornerRadius="8,8,0,0"/>
+
+            <StackPanel Margin="26,20,26,22" MouseLeftButtonDown="OnDrag">
+                <TextBlock Text="TIME TRACKER" Foreground="#585858" FontSize="10"
+                           FontWeight="SemiBold" FontFamily="Segoe UI"/>
+                <TextBlock Text="Settings" Foreground="#081F4B" FontSize="24"
+                           FontWeight="Bold" FontFamily="Segoe UI" Margin="0,2,0,2"/>
+                <TextBlock Text="These mirror what your HRMS enforces. Set them once."
+                           Foreground="#585858" FontSize="12" FontFamily="Segoe UI"
+                           Margin="0,0,0,20"/>
+
+                <!-- ── working hours (§1) ── -->
+                <TextBlock Text="WORKING HOURS" Style="{StaticResource SectionLabel}"/>
+                <Border Height="1" Background="#ECECE4" Margin="0,0,0,14"/>
+
+                <Grid Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="16"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="HALF DAY" Style="{StaticResource DialogLabel}"/>
+                        <TextBox x:Name="HalfDayBox" Style="{StaticResource DialogInput}"
+                                 FontFamily="Consolas" FontSize="15"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock Text="FULL DAY" Style="{StaticResource DialogLabel}"/>
+                        <TextBox x:Name="FullDayBox" Style="{StaticResource DialogInput}"
+                                 FontFamily="Consolas" FontSize="15"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text="USUAL START" Style="{StaticResource DialogLabel}"/>
+                        <TextBox x:Name="StartBox" Style="{StaticResource DialogInput}"
+                                 FontFamily="Consolas" FontSize="15"/>
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="WORKING DAYS" Style="{StaticResource DialogLabel}"/>
+                <UniformGrid x:Name="DayGrid" Columns="7" Margin="0,0,0,20"/>
+
+                <!-- ── task tracking (§8, §9) ── -->
+                <TextBlock Text="TASK TRACKING" Style="{StaticResource SectionLabel}"/>
+                <Border Height="1" Background="#ECECE4" Margin="0,0,0,14"/>
+
+                <TextBlock Text="REMIND ME TO UPDATE MY ACTIVITY" Style="{StaticResource DialogLabel}"/>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
+                    <RadioButton x:Name="NudgeOff" Content="Never" GroupName="nudge"
+                                 FontFamily="Segoe UI" FontSize="13" Margin="0,0,18,0"/>
+                    <RadioButton x:Name="Nudge30" Content="Every 30 min" GroupName="nudge"
+                                 FontFamily="Segoe UI" FontSize="13" Margin="0,0,18,0"/>
+                    <RadioButton x:Name="Nudge60" Content="Hourly" GroupName="nudge"
+                                 FontFamily="Segoe UI" FontSize="13" Margin="0,0,18,0"/>
+                    <RadioButton x:Name="Nudge120" Content="Every 2 hours" GroupName="nudge"
+                                 FontFamily="Segoe UI" FontSize="13"/>
+                </StackPanel>
+
+                <TextBlock Text="TASK STATUSES I USE" Style="{StaticResource DialogLabel}"/>
+                <UniformGrid x:Name="StatusGrid" Columns="3" Margin="0,0,0,20"/>
+
+                <!-- ── notifications (§22) ── -->
+                <TextBlock Text="NOTIFICATIONS" Style="{StaticResource SectionLabel}"/>
+                <Border Height="1" Background="#ECECE4" Margin="0,0,0,14"/>
+
+                <CheckBox x:Name="NotifyThresholds" FontFamily="Segoe UI" FontSize="13"
+                          Margin="0,0,0,8"
+                          Content="Tell me when I reach half day and full day"/>
+                <CheckBox x:Name="NotifyReview" FontFamily="Segoe UI" FontSize="13"
+                          Margin="0,0,0,20"
+                          Content="Remind me to review the day before I finish"/>
+
+                <TextBlock x:Name="ErrorText" Foreground="#C62828" FontSize="12"
+                           FontFamily="Segoe UI" Margin="0,0,0,10" Visibility="Collapsed"
+                           TextWrapping="Wrap"/>
+
+                <Grid>
+                    <Button Content="Reset to defaults" Click="OnReset"
+                            HorizontalAlignment="Left" Style="{StaticResource DialogGhost}"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="Cancel" Click="OnCancel" IsCancel="True"
+                                Style="{StaticResource DialogGhost}" Margin="0,0,8,0"/>
+                        <Button Content="Save" Click="OnSave" IsDefault="True"
+                                Style="{StaticResource DialogPrimary}"/>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+
+            <Border Height="4" Background="#EB4A26" CornerRadius="0,0,8,8"/>
+        </StackPanel>
+    </Border>
+</Window>

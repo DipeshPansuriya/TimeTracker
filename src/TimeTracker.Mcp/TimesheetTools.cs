@@ -182,7 +182,7 @@ public sealed class TimesheetTools(TimesheetRepository repo)
         if (log.Current is not { } current) return "Nothing is running.";
 
         if (!Enum.TryParse<ActivityStatus>(status, ignoreCase: true, out var parsed))
-            return $"'{status}' is not a status. Use Completed, OnHold, Blocked or Cancelled.";
+            return $"'{status}' is not a status. This user has: {StatusList()}.";
 
         repo.SaveActivities(log.CompleteCurrent(DateTime.Now, parsed));
         return $"Closed {current.Id}: {current.Title} as {parsed} at {DateTime.Now:HH\\:mm}.";
@@ -338,6 +338,10 @@ public sealed class TimesheetTools(TimesheetRepository repo)
         error = $"'{input}' is not a date. Use yyyy-MM-dd.";
         return false;
     }
+
+    /// <summary>The statuses this user actually uses (§9), for error messages.</summary>
+    private string StatusList()
+        => string.Join(", ", TrackingPreferences.FromConfig(repo.GetConfig).Statuses);
 
     private static string Hhmm(TimeSpan v)
         => $"{Math.Abs((int)v.TotalHours):00}:{Math.Abs(v.Minutes):00}";

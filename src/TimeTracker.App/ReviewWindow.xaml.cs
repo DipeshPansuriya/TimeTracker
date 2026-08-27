@@ -101,7 +101,7 @@ public partial class ReviewWindow : Window
         var activity = _model.Log.Activities.FirstOrDefault(a => a.Id.Value == row.Id);
         if (activity is null) return;
 
-        var dialog = new EditActivityWindow(activity) { Owner = this };
+        var dialog = new EditActivityWindow(activity, _model.Preferences.Statuses) { Owner = this };
         if (dialog.ShowDialog() != true) return;
 
         _model.AmendActivity(

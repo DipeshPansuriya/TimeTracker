@@ -25,9 +25,15 @@
                     <TextBlock x:Name="RangeText" Foreground="#585858" FontSize="12"
                                FontFamily="Segoe UI" Margin="0,2,0,0"/>
                 </StackPanel>
-                <Button Content="Close" Click="OnClose" VerticalAlignment="Top"
-                        HorizontalAlignment="Right" Style="{StaticResource DialogGhost}"
-                        Padding="14,5"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top"
+                            HorizontalAlignment="Right">
+                    <Button Content="Export CSV" Click="OnExport"
+                            Style="{StaticResource DialogGhost}" Padding="14,5"
+                            Margin="0,0,8,0"
+                            ToolTip="Save this period as a spreadsheet you can send to HR"/>
+                    <Button Content="Close" Click="OnClose"
+                            Style="{StaticResource DialogGhost}" Padding="14,5"/>
+                </StackPanel>
             </Grid>
 
             <!-- period switch + navigation -->

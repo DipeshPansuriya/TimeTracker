@@ -240,4 +240,76 @@ public sealed class TimesheetRepositoryTests : IDisposable
 
         Assert.Equal(keyStore.GetOrCreate(), keyStore.GetOrCreate());
     }
+
+    // ── settings round trip (the path the settings screen actually takes) ──────
+
+    [Fact]
+    public void WorkingHoursSurviveARealSaveAndReload()
+    {
+        var policy = new WorkingHoursPolicy(
+            HalfDay: new TimeSpan(4, 0, 0),
+            FullDay: new TimeSpan(9, 15, 0),
+            WorkingDays: [DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Saturday],
+            DefaultStart: new TimeOnly(8, 45));
+
+        foreach (var (key, value) in policy.ToConfig()) _repo.SetConfig(key, value);
+
+        var loaded = WorkingHoursPolicy.FromConfig(_repo.GetConfig);
+
+        Assert.Equal(policy.HalfDay, loaded.HalfDay);
+        Assert.Equal(policy.FullDay, loaded.FullDay);
+        Assert.Equal(policy.DefaultStart, loaded.DefaultStart);
+        Assert.Equal(3, loaded.WorkingDays.Count);
+        Assert.Contains(DayOfWeek.Saturday, loaded.WorkingDays);
+    }
+
+    [Fact]
+    public void PreferencesSurviveARealSaveAndReload()
+    {
+        var prefs = new TrackingPreferences(
+            Statuses: [ActivityStatus.InProgress, ActivityStatus.Completed, ActivityStatus.Blocked],
+            NudgeInterval: TimeSpan.FromMinutes(30),
+            NotifyThresholds: false,
+            NotifyReviewAtEnd: true);
+
+        foreach (var (key, value) in prefs.ToConfig()) _repo.SetConfig(key, value);
+
+        var loaded = TrackingPreferences.FromConfig(_repo.GetConfig);
+
+        Assert.Equal(3, loaded.Statuses.Count);
+        Assert.Equal(TimeSpan.FromMinutes(30), loaded.NudgeInterval);
+        Assert.False(loaded.NotifyThresholds);
+        Assert.True(loaded.NotifyReviewAtEnd);
+    }
+
+    [Fact]
+    public void ChangingTheFullDayChangesWhatTheEngineReports()
+    {
+        // The whole point of the settings screen: the number the user types has to reach
+        // the arithmetic. 09:00 to 18:00 is nine hours - a full day under an 8:30 rule,
+        // and half an hour short under a 9:30 one.
+        _repo.SetConfig("full_day", "09:30");
+        _repo.SetConfig("half_day", "04:45");
+
+        var policy = WorkingHoursPolicy.FromConfig(_repo.GetConfig);
+        var day = WorkDay.Started(On(26, 9, 0)).Completed(On(26, 18, 0));
+
+        var status = WorkDayCalculator.Calculate(day, On(26, 18, 0), policy);
+
+        Assert.Equal(new TimeSpan(9, 0, 0), status.Worked);
+        Assert.Equal(new TimeSpan(0, 30, 0), status.Shortfall);
+        Assert.Equal(DayCompletion.HalfDayComplete, status.Completion);
+    }
+
+    [Fact]
+    public void SettingsSurviveTheDatabaseBeingReopened()
+    {
+        _repo.SetConfig("full_day", "07:45");
+
+        // A second repository over the same file, as a restart would produce.
+        var reopened = new TimesheetRepository(_db);
+
+        Assert.Equal(new TimeSpan(7, 45, 0),
+                     WorkingHoursPolicy.FromConfig(reopened.GetConfig).FullDay);
+    }
 }

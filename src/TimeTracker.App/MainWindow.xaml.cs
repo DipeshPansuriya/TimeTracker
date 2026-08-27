@@ -42,6 +42,12 @@ public partial class MainWindow : Window
 
     private void OnHide(object sender, RoutedEventArgs e) => Hide();
 
+    private void OnSettings(object sender, RoutedEventArgs e)
+    {
+        if (_model is null) return;
+        new SettingsWindow(_model) { Owner = this }.ShowDialog();
+    }
+
     /// <summary>
     /// "Continue" is deliberately a no-op on the record when a task is already running —
     /// it acknowledges the nudge without writing anything (brief §7).
@@ -52,6 +58,9 @@ public partial class MainWindow : Window
         if (_model.Log.Current is null) OnNewTask(sender, e);
         else _model.Refresh();
     }
+
+    /// <summary>Lets the hourly nudge open the same dialog the button does.</summary>
+    public void StartNewTask() => OnNewTask(this, new RoutedEventArgs());
 
     private void OnNewTask(object sender, RoutedEventArgs e)
     {

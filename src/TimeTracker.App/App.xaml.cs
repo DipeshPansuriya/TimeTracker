@@ -49,7 +49,12 @@ public partial class App : System.Windows.Application
         // Every 30 seconds. Nothing accumulates between ticks — each one recomputes from
         // the clock — so a missed tick or a sleeping machine costs nothing.
         _tick = new DispatcherTimer { Interval = TimeSpan.FromSeconds(30) };
-        _tick.Tick += (_, _) => _model.Refresh();
+        _tick.Tick += (_, _) =>
+        {
+            _model.Refresh();
+            if (_model.NudgeIsDue()) AskWhatYouAreWorkingOn();
+            if (_model.NeedsLocationNote()) AskForLocationNote();
+        };
         _tick.Start();
 
         AskAboutUnclosedDay();
@@ -126,6 +131,61 @@ public partial class App : System.Windows.Application
         }
     }
 
+    /// <summary>
+    /// The optional reminder from §8. Answering "continue" writes nothing at all — the
+    /// whole point is that an unchanged day costs one click and leaves no record behind.
+    /// </summary>
+    private void AskWhatYouAreWorkingOn()
+    {
+        if (_model is null) return;
+
+        var current = _model.Log.Current;
+        var prompt = current is null
+            ? "You have not recorded a task yet. Start one now?"
+            : $"Still on “{current.Title}”?";
+
+        var answer = System.Windows.MessageBox.Show(
+            prompt + Environment.NewLine + Environment.NewLine +
+            "Yes keeps it running. No lets you start something else.",
+            "Time tracker",
+            current is null ? MessageBoxButton.YesNo : MessageBoxButton.YesNoCancel,
+            MessageBoxImage.Question);
+
+        _model.NudgeAnswered();
+
+        if (answer == MessageBoxResult.No)
+        {
+            ShowWidget();
+            _widget?.StartNewTask();
+        }
+    }
+
+    /// <summary>
+    /// §5: arriving at the office after midday having been elsewhere needs an explanation.
+    /// Asked once — declining records that it was asked so it does not nag.
+    /// </summary>
+    private void AskForLocationNote()
+    {
+        if (_model is null) return;
+
+        var answer = System.Windows.MessageBox.Show(
+            "You reached the office after midday, having started somewhere else." +
+            Environment.NewLine + Environment.NewLine +
+            "Add a note explaining why? HRMS usually wants one.",
+            "Time tracker", MessageBoxButton.YesNo, MessageBoxImage.Question);
+
+        if (answer == MessageBoxResult.Yes)
+        {
+            ShowWidget();
+            var review = new ReviewWindow(_model) { Owner = _widget };
+            if (review.ShowDialog() == true) _model.CompleteDay();
+        }
+        else
+        {
+            _model.SetLocationNote("(no reason given)");
+        }
+    }
+
     private void BuildTray()
     {
         var menu = new Forms.ContextMenuStrip();
@@ -135,6 +195,8 @@ public partial class App : System.Windows.Application
         // work around instead of using.
         menu.Items.Add("Review / edit today", null, (_, _) => ShowReview());
         menu.Items.Add("Day, week and month report", null, (_, _) => ShowSummary());
+        menu.Items.Add(new Forms.ToolStripSeparator());
+        menu.Items.Add("Settings", null, (_, _) => ShowSettings());
         menu.Items.Add("Complete day", null, (_, _) => { _model?.CompleteDay(); ShowWidget(); });
         menu.Items.Add(new Forms.ToolStripSeparator());
         menu.Items.Add("Exit", null, (_, _) => Shutdown());
@@ -171,6 +233,13 @@ public partial class App : System.Windows.Application
         }
 
         return SystemIcons.Application;
+    }
+
+    /// <summary>Brief §1 setup, reachable at any time rather than only on first run.</summary>
+    private void ShowSettings()
+    {
+        if (_model is null) return;
+        new SettingsWindow(_model) { Owner = _widget }.ShowDialog();
     }
 
     private void ShowSummary()

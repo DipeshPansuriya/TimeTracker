@@ -184,4 +184,32 @@ public class WorkDayCalculatorTests
     [InlineData("2026-08-30", false)] // Sunday
     public void WorkingDaysComeFromConfiguration_NotFromHardCodedWeekends(string date, bool expected)
         => Assert.Equal(expected, Policy.IsWorkingDay(DateOnly.Parse(date)));
+
+    // ── expected end while on a break ─────────────────────────────────────────
+
+    [Fact]
+    public void ExpectedEnd_SlidesWhileYouAreOnABreak()
+    {
+        // Raised as "expected end ignores breaks". It does not: worked stops accruing during
+        // a break while `now` keeps moving, so remaining stays put and the expected finish
+        // moves later by exactly the length of the break. Pinned so nobody "fixes" it.
+        var day = WorkDay.Started(At(9, 0)).WithOpenBreak(At(13, 0));
+
+        var atBreakStart = WorkDayCalculator.Calculate(day, At(13, 0), Policy);
+        var halfAnHourLater = WorkDayCalculator.Calculate(day, At(13, 30), Policy);
+
+        Assert.Equal(atBreakStart.Worked, halfAnHourLater.Worked);
+        Assert.Equal(atBreakStart.Remaining, halfAnHourLater.Remaining);
+        Assert.Equal(atBreakStart.ExpectedEnd!.Value.AddMinutes(30),
+                     halfAnHourLater.ExpectedEnd!.Value);
+    }
+
+    [Fact]
+    public void ExpectedEnd_AssumesYouCarryOnFromNow()
+    {
+        // 09:00 start, 11:00 now, 2h worked, 6h30 left -> finishing at 17:30.
+        var status = WorkDayCalculator.Calculate(WorkDay.Started(At(9, 0)), At(11, 0), Policy);
+
+        Assert.Equal(At(17, 30), status.ExpectedEnd);
+    }
 }

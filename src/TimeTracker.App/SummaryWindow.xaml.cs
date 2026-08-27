@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text;
 using System.Windows;
 using System.Windows.Input;
 using TimeTracker.Core;
@@ -291,6 +293,66 @@ public partial class SummaryWindow : Window
     private void OnDrag(object sender, MouseButtonEventArgs e)
     {
         if (e.ChangedButton == MouseButton.Left) DragMove();
+    }
+
+    /// <summary>
+    /// Writes the visible period to CSV.
+    /// </summary>
+    /// <remarks>
+    /// The stop-gap for HRMS sync being blocked on a credential decision. People still have
+    /// to report their hours this month, and "wait for the integration" is not an answer.
+    /// A single day also gets its activity detail, since that is the only period where
+    /// individual tasks are worth reading.
+    /// </remarks>
+    private void OnExport(object sender, RoutedEventArgs e)
+    {
+        var (from, to) = _period switch
+        {
+            Period.Week => _model.WeekOf(_anchor),
+            Period.Month => _model.MonthOf(_anchor),
+            _ => (_anchor, _anchor)
+        };
+
+        var suggested = _period switch
+        {
+            Period.Week => $"timesheet-week-{from:yyyy-MM-dd}.csv",
+            Period.Month => $"timesheet-{from:yyyy-MM}.csv",
+            _ => $"timesheet-{from:yyyy-MM-dd}.csv"
+        };
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            FileName = suggested,
+            DefaultExt = ".csv",
+            Filter = "Comma separated values (*.csv)|*.csv",
+            Title = "Export timesheet"
+        };
+
+        if (dialog.ShowDialog(this) != true) return;
+
+        try
+        {
+            var csv = TimesheetExport.DaysToCsv(_model.DaysIn(from, to));
+
+            if (_period == Period.Day && _anchor == _model.Log.Date)
+            {
+                csv += Environment.NewLine +
+                       TimesheetExport.ActivitiesToCsv(_model.Log, DateTime.Now);
+            }
+
+            File.WriteAllText(dialog.FileName, csv, Encoding.UTF8);
+
+            MessageBox.Show(this, $"Saved to{Environment.NewLine}{dialog.FileName}",
+                            "Time tracker", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // Named the two that actually happen — file open in Excel, or a folder the user
+            // cannot write to. Anything else is a real bug and should not be swallowed.
+            MessageBox.Show(this,
+                $"Could not write the file.{Environment.NewLine}{Environment.NewLine}{ex.Message}",
+                "Time tracker", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void OnClose(object sender, RoutedEventArgs e) => Close();

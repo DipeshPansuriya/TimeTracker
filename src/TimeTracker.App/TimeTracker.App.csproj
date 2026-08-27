@@ -17,6 +17,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- WPF and WinForms are both referenced (WinForms only for the tray icon), and they
+         collide on a handful of type names. Aliasing them once here beats qualifying every
+         use site and forgetting one. -->
+    <Using Include="System.Windows.MessageBox" Alias="MessageBox" />
+    <Using Include="System.Windows.Controls.Control" Alias="Control" />
+    <Using Include="System.Windows.Controls.CheckBox" Alias="CheckBox" />
+    <Using Include="System.Windows.Controls.TextBox" Alias="TextBox" />
+    <Using Include="System.Windows.Media.Brush" Alias="Brush" />
+    <Using Include="System.Windows.Application" Alias="Application" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Also embedded, so the tray icon is loaded from a known resource rather than
          extracted from the exe - extraction returns a single size and looks blurry
          at tray scale. -->

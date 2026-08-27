@@ -21,6 +21,8 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
     private WorkDay _day;
     private ActivityLog _log;
     private WorkingHoursPolicy _policy;
+    private TrackingPreferences _prefs;
+    private DateTime _lastNudge;
 
     private bool _announcedHalfDay;
     private bool _announcedFullDay;
@@ -32,6 +34,8 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
 
         var today = DateOnly.FromDateTime(_clock());
         _policy = LoadPolicy();
+        _prefs = TrackingPreferences.FromConfig(_repo.GetConfig);
+        _lastNudge = _clock();
         _day = _repo.LoadDay(today) ?? WorkDay.NotStarted(today);
         _log = _repo.LoadActivities(today);
 
@@ -76,6 +80,7 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
     public WorkDay Day => _day;
     public ActivityLog Log => _log;
     public WorkingHoursPolicy Policy => _policy;
+    public TrackingPreferences Preferences => _prefs;
 
     // ── commands the shell calls ──────────────────────────────────────────────
 
@@ -306,6 +311,8 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
     /// </summary>
     private void AnnounceThresholds(WorkDayStatus status)
     {
+        if (!_prefs.NotifyThresholds) return;
+
         if (!_announcedHalfDay && status.Completion is DayCompletion.HalfDayComplete
                                                     or DayCompletion.FullDayComplete)
         {
@@ -361,13 +368,65 @@ public sealed class WidgetViewModel : INotifyPropertyChanged
     /// </summary>
     private WorkingHoursPolicy LoadPolicy() => WorkingHoursPolicy.FromConfig(_repo.GetConfig);
 
-    public void SavePolicy(WorkingHoursPolicy policy)
+    /// <summary>
+    /// Persists the settings screen. Both halves are written together so the stored
+    /// configuration can never be half-updated.
+    /// </summary>
+    public void SaveSettings(WorkingHoursPolicy policy, TrackingPreferences preferences)
     {
-        _repo.SetConfig("half_day", policy.HalfDay.ToString(@"hh\:mm"));
-        _repo.SetConfig("full_day", policy.FullDay.ToString(@"hh\:mm"));
-        _repo.SetConfig("default_start", policy.DefaultStart.ToString("HH:mm"));
-        _repo.SetConfig("working_days", string.Join(',', policy.WorkingDays));
+        ArgumentNullException.ThrowIfNull(policy);
+        ArgumentNullException.ThrowIfNull(preferences);
+
+        foreach (var (key, value) in policy.ToConfig()) _repo.SetConfig(key, value);
+        foreach (var (key, value) in preferences.ToConfig()) _repo.SetConfig(key, value);
+
         _policy = policy;
+        _prefs = preferences;
+        Refresh();
+    }
+
+    /// <summary>
+    /// True when the hourly reminder (§8) is due. The caller asks on each tick; this owns
+    /// the decision so the "when" lives beside the rest of the day's state.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately silent when the day has not started, when it is closed, and while on a
+    /// break — a reminder to describe what you are working on is noise if you are not
+    /// working. It also never fires twice for the same interval.
+    /// </remarks>
+    public bool NudgeIsDue()
+    {
+        if (!_prefs.NudgeEnabled || !CanTrack) return false;
+
+        var now = _clock();
+        if (WorkDayCalculator.Calculate(_day, now, _policy).IsOnBreak) return false;
+        if (now - _lastNudge < _prefs.NudgeInterval!.Value) return false;
+
+        _lastNudge = now;
+        return true;
+    }
+
+    /// <summary>Resets the nudge clock — answering it counts as having been asked.</summary>
+    public void NudgeAnswered() => _lastNudge = _clock();
+
+    /// <summary>
+    /// True when a second-half office arrival still needs its explanation (§5).
+    /// </summary>
+    public bool NeedsLocationNote()
+        => CanTrack && _day.NeedsLocationNote(new TimeOnly(13, 0));
+
+    public void SetLocationNote(string note)
+    {
+        _day = _day.WithNote(note);
+        _repo.SaveDay(_day);
+        Refresh();
+    }
+
+    /// <summary>Records a move to a different location during the day (§5).</summary>
+    public void MoveTo(WorkLocation location)
+    {
+        _day = _day.AtLocation(location, _clock());
+        _repo.SaveDay(_day);
         Refresh();
     }
 
