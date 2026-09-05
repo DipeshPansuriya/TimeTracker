@@ -13,7 +13,7 @@ public class AmendTests
     private static ActivityLog Empty => ActivityLog.Empty(new DateOnly(2026, 8, 26));
 
     private static ActivityLog WithOneClosed() => Empty
-        .Start("API performance optimization", "Galaxy", At(10, 0))
+        .Start("API performance optimization", "Contoso", At(10, 0))
         .CompleteCurrent(At(12, 30), ActivityStatus.Completed);
 
     // ── activity details ──────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ public class AmendTests
         var after = log.Amend(id, title: "API latency investigation");
 
         Assert.Equal("API latency investigation", after.Activities[0].Title);
-        Assert.Equal("Galaxy", after.Activities[0].Customer);
+        Assert.Equal("Contoso", after.Activities[0].Customer);
         Assert.Equal(At(10, 0), after.Activities[0].Start);
         Assert.Equal(At(12, 30), after.Activities[0].End);
     }
@@ -131,8 +131,8 @@ public class AmendTests
     public void AmendingReordersByStartTime_SoTheDayStillReadsInOrder()
     {
         var log = Empty
-            .Start("First", "Galaxy", At(9, 0))
-            .Start("Second", "Galaxy", At(11, 0));
+            .Start("First", "Contoso", At(9, 0))
+            .Start("Second", "Contoso", At(11, 0));
 
         // Move the second one to before the first.
         var after = log.Amend(log.Activities[1].Id, start: At(8, 0), end: At(8, 30));

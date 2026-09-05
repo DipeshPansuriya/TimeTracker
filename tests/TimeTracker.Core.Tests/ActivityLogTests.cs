@@ -43,9 +43,9 @@ public class ActivityLogTests
     public void ActivityIds_AreUniqueWithinADay()
     {
         var log = Empty
-            .Start("First", "Galaxy", At(9, 30))
-            .Start("Second", "Galaxy", At(10, 30))
-            .Start("Third", "Galaxy", At(11, 30));
+            .Start("First", "Contoso", At(9, 30))
+            .Start("Second", "Contoso", At(10, 30))
+            .Start("Third", "Contoso", At(11, 30));
 
         Assert.Equal(3, log.Activities.Select(a => a.Id).Distinct().Count());
     }
@@ -55,11 +55,11 @@ public class ActivityLogTests
     [Fact]
     public void StartingATask_MakesItCurrent()
     {
-        var log = Empty.Start("API performance optimization", "Galaxy", At(10, 0));
+        var log = Empty.Start("API performance optimization", "Contoso", At(10, 0));
 
         Assert.NotNull(log.Current);
         Assert.Equal("API performance optimization", log.Current!.Title);
-        Assert.Equal("Galaxy", log.Current.Customer);
+        Assert.Equal("Contoso", log.Current.Customer);
         Assert.Equal(ActivityStatus.InProgress, log.Current.Status);
     }
 
@@ -69,17 +69,17 @@ public class ActivityLogTests
         // Brief §7: on a new task ask for title and description, but "Customer, only if
         // it has changed". Passing null must mean "same customer", not "no customer".
         var log = Empty
-            .Start("API performance optimization", "Galaxy", At(10, 0))
+            .Start("API performance optimization", "Contoso", At(10, 0))
             .Start("Database migration", customer: null, At(12, 30));
 
-        Assert.Equal("Galaxy", log.Current!.Customer);
+        Assert.Equal("Contoso", log.Current!.Customer);
     }
 
     [Fact]
     public void SwitchingTask_WithADifferentCustomer_UsesTheNewOne()
     {
         var log = Empty
-            .Start("API performance optimization", "Galaxy", At(10, 0))
+            .Start("API performance optimization", "Contoso", At(10, 0))
             .Start("Onsite workshop", "ABC Logistics", At(12, 30));
 
         Assert.Equal("ABC Logistics", log.Current!.Customer);
@@ -91,7 +91,7 @@ public class ActivityLogTests
         // No gap and no overlap: the previous task ends exactly when the next begins,
         // otherwise the day's task durations stop reconciling with worked time.
         var log = Empty
-            .Start("API performance optimization", "Galaxy", At(10, 0))
+            .Start("API performance optimization", "Contoso", At(10, 0))
             .Start("Database migration", null, At(12, 30));
 
         var previous = log.Activities[0];
@@ -104,7 +104,7 @@ public class ActivityLogTests
     public void ContinuingTheCurrentTask_CreatesNothingNew()
     {
         // The hourly nudge answered with "yes, continue" must be a no-op on the record.
-        var log = Empty.Start("API performance optimization", "Galaxy", At(10, 0));
+        var log = Empty.Start("API performance optimization", "Contoso", At(10, 0));
 
         var after = log.ContinueCurrent();
 
@@ -118,7 +118,7 @@ public class ActivityLogTests
     public void Duration_OfAClosedActivity_IsEndMinusStart()
     {
         var log = Empty
-            .Start("API performance optimization", "Galaxy", At(10, 0))
+            .Start("API performance optimization", "Contoso", At(10, 0))
             .Start("Next thing", null, At(12, 30));
 
         Assert.Equal(new TimeSpan(2, 30, 0), log.Activities[0].DurationAt(At(18, 0)));
@@ -138,7 +138,7 @@ public class ActivityLogTests
     public void CompletingTheCurrentTask_LeavesNothingRunning()
     {
         var log = Empty
-            .Start("API performance optimization", "Galaxy", At(10, 0))
+            .Start("API performance optimization", "Contoso", At(10, 0))
             .CompleteCurrent(At(12, 30), ActivityStatus.Completed);
 
         Assert.Null(log.Current);
@@ -158,7 +158,7 @@ public class ActivityLogTests
     public void ATaskCanBePutOnHoldRatherThanCompleted()
     {
         var log = Empty
-            .Start("Blocked on vendor", "Galaxy", At(10, 0))
+            .Start("Blocked on vendor", "Contoso", At(10, 0))
             .CompleteCurrent(At(11, 0), ActivityStatus.OnHold);
 
         Assert.Equal(ActivityStatus.OnHold, log.Activities[0].Status);
@@ -171,7 +171,7 @@ public class ActivityLogTests
     {
         // Brief §23 shows exactly this: "Missing Information: Customer for Task 3".
         var log = Empty
-            .Start("Galaxy API optimization", "Galaxy", At(10, 0))
+            .Start("Contoso API optimization", "Contoso", At(10, 0))
             .Start("Customer meeting", null, At(12, 0))
             .StartWithoutCustomer("Database migration", At(14, 0));
 
@@ -184,7 +184,7 @@ public class ActivityLogTests
     [Fact]
     public void ACleanDayReportsNoGaps()
     {
-        var log = Empty.Start("Galaxy API optimization", "Galaxy", At(10, 0));
+        var log = Empty.Start("Contoso API optimization", "Contoso", At(10, 0));
 
         Assert.Empty(log.MissingInformation());
     }
@@ -195,14 +195,14 @@ public class ActivityLogTests
     public void CustomerTotals_AggregateAcrossTasks()
     {
         var log = Empty
-            .Start("Task A", "Galaxy", At(9, 0))
+            .Start("Task A", "Contoso", At(9, 0))
             .Start("Task B", "ABC Logistics", At(10, 0))
-            .Start("Task C", "Galaxy", At(11, 0))
+            .Start("Task C", "Contoso", At(11, 0))
             .CompleteCurrent(At(12, 0), ActivityStatus.Completed);
 
         var totals = log.TotalsByCustomer(At(12, 0));
 
-        Assert.Equal(new TimeSpan(2, 0, 0), totals["Galaxy"]);
+        Assert.Equal(new TimeSpan(2, 0, 0), totals["Contoso"]);
         Assert.Equal(new TimeSpan(1, 0, 0), totals["ABC Logistics"]);
     }
 
@@ -216,7 +216,7 @@ public class ActivityLogTests
         // produced a record whose end preceded its own start.
         var log = Empty
             .Start("Database migration", "ABC Logistics", At(18, 28))
-            .Record("API performance issue", "Galaxy", At(10, 0), At(12, 30));
+            .Record("API performance issue", "Contoso", At(10, 0), At(12, 30));
 
         Assert.Equal("Database migration", log.Current!.Title);
         Assert.True(log.Current.IsRunning);
@@ -226,7 +226,7 @@ public class ActivityLogTests
     [Fact]
     public void ARecordedActivityIsCompleteWithItsOwnTimes()
     {
-        var log = Empty.Record("API performance issue", "Galaxy", At(10, 0), At(12, 30));
+        var log = Empty.Record("API performance issue", "Contoso", At(10, 0), At(12, 30));
 
         var entry = log.Activities[0];
         Assert.Equal(ActivityStatus.Completed, entry.Status);
@@ -237,16 +237,16 @@ public class ActivityLogTests
     public void RecordingCarriesTheCurrentCustomerWhenNoneIsGiven()
     {
         var log = Empty
-            .Start("Something", "Galaxy", At(9, 0))
+            .Start("Something", "Contoso", At(9, 0))
             .Record("Earlier thing", null, At(8, 0), At(8, 30));
 
-        Assert.Equal("Galaxy", log.Activities[1].Customer);
+        Assert.Equal("Contoso", log.Activities[1].Customer);
     }
 
     [Fact]
     public void RecordingABackwardsRangeIsRejected()
         => Assert.Throws<ArgumentOutOfRangeException>(
-            () => Empty.Record("Nope", "Galaxy", At(12, 0), At(10, 0)));
+            () => Empty.Record("Nope", "Contoso", At(12, 0), At(10, 0)));
 
     [Fact]
     public void ClosingATaskEarlierThanItsStart_ClampsRatherThanCorrupting()

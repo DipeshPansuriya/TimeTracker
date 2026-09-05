@@ -770,7 +770,7 @@ footer.pg .meta{
       wfhAsked:true,
       segs:[{t:'office',s:550,e:1080}],
       tasks:[
-        {id:'ACT-20260826-000101',ttl:'API performance optimization',cust:'Galaxy',s:600,e:750,st:'Completed'},
+        {id:'ACT-20260826-000101',ttl:'API performance optimization',cust:'Contoso',s:600,e:750,st:'Completed'},
         {id:'ACT-20260826-000102',ttl:'Sprint review meeting',cust:'Internal',s:750,e:795,st:'Completed'},
         {id:'ACT-20260826-000103',ttl:'Database migration',cust:'ABC Logistics',s:840,e:1080,st:'In progress'}
       ]
@@ -780,8 +780,8 @@ footer.pg .meta{
       wfhAsked:true,
       segs:[{t:'wfh',s:525,e:780},{t:'break',s:780,e:825},{t:'wfh',s:825,e:1080}],
       tasks:[
-        {id:'ACT-20260826-000201',ttl:'CSP header remediation',cust:'Galaxy',s:525,e:780,st:'Completed'},
-        {id:'ACT-20260826-000202',ttl:'Tenant isolation review',cust:'LPMS',s:825,e:1080,st:'In progress'}
+        {id:'ACT-20260826-000201',ttl:'CSP header remediation',cust:'Contoso',s:525,e:780,st:'Completed'},
+        {id:'ACT-20260826-000202',ttl:'Tenant isolation review',cust:'Northwind',s:825,e:1080,st:'In progress'}
       ]
     },
     client:{
@@ -798,7 +798,7 @@ footer.pg .meta{
       wfhAsked:true,
       segs:[{t:'office',s:550,e:810},{t:'break',s:810,e:840},{t:'office',s:840,e:1084}],
       tasks:[
-        {id:'ACT-20260826-000401',ttl:'Query tuning — invoice search',cust:'Galaxy',s:570,e:810,st:'Completed'},
+        {id:'ACT-20260826-000401',ttl:'Query tuning — invoice search',cust:'Contoso',s:570,e:810,st:'Completed'},
         {id:'ACT-20260826-000402',ttl:'Release smoke checks',cust:'Internal',s:840,e:1084,st:'Completed'}
       ]
     }
@@ -1009,10 +1009,10 @@ footer.pg .meta{
 
   /* ═══════════ MCP ═══════════ */
   var ASKS=[
-    {say:'I worked on the Galaxy API performance issue from 10 AM to 12:30 PM.',
+    {say:'I worked on the Contoso API performance issue from 10 AM to 12:30 PM.',
      out:function(){return [
        ['cm','// agent resolves customer from your existing task history'],
-       ['fn','timesheet.log_activity','{ title: "API performance issue", customer: "Galaxy",'],
+       ['fn','timesheet.log_activity','{ title: "API performance issue", customer: "Contoso",'],
        ['ln','                          start: "10:00", end: "12:30" }'],
        ['st','→ ACT-20260826-000101 created · 02:30 · stored locally'],
        ['cm','// nothing left the machine']
@@ -1084,7 +1084,7 @@ footer.pg .meta{
         ['From home','2','Mon, Thu','info'],
         ['Client visits','1','ABC Logistics','info']
       ];
-      extra='<div class="note"><b>Customer-wise.</b> Galaxy 18:20 · ABC Logistics 14:05 · LPMS 06:40 · Internal 03:50</div>';
+      extra='<div class="note"><b>Customer-wise.</b> Contoso 18:20 · ABC Logistics 14:05 · Northwind 06:40 · Internal 03:50</div>';
     }else{
       k=[
         ['Working days','21','August 2026',''],
@@ -1094,7 +1094,7 @@ footer.pg .meta{
         ['Shortfall','00:40','Across 2 days','warn'],
         ['Activities','96','88 complete','']
       ];
-      extra='<div class="note"><b>Customer-wise.</b> Galaxy 74:15 · ABC Logistics 52:30 · LPMS 31:20 · Internal 22:05</div>';
+      extra='<div class="note"><b>Customer-wise.</b> Contoso 74:15 · ABC Logistics 52:30 · Northwind 31:20 · Internal 22:05</div>';
     }
     document.getElementById('sumKpis').innerHTML=k.map(function(x){
       var isText=/[A-Za-z]{3}/.test(x[1]);

@@ -81,7 +81,7 @@ public class ExportTests
     public void ActivitiesExportCarriesIdsAndDurations()
     {
         var log = ActivityLog.Empty(new DateOnly(2026, 8, 26))
-            .Start("API performance optimization", "Galaxy", On(26, 10, 0))
+            .Start("API performance optimization", "Contoso", On(26, 10, 0))
             .Start("Database migration", "ABC Logistics", On(26, 12, 30));
 
         var csv = TimesheetExport.ActivitiesToCsv(log, On(26, 14, 0));

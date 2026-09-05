@@ -71,8 +71,8 @@ public class SummaryTests
                          .Completed(On(26, 18, 0));
 
         var log = ActivityLog.Empty(new DateOnly(2026, 8, 26))
-            .Start("API performance optimization", "Galaxy", On(26, 10, 0))
-            .Start("Sprint review", "Galaxy", On(26, 12, 30))
+            .Start("API performance optimization", "Contoso", On(26, 10, 0))
+            .Start("Sprint review", "Contoso", On(26, 12, 30))
             .Start("Database migration", "ABC Logistics", On(26, 14, 0));
 
         var summary = DaySummary.Build(day, log, Policy, now: On(26, 18, 0));
@@ -173,15 +173,15 @@ public class SummaryTests
         var days = new[]
         {
             Day(24, WorkLocation.Office, new TimeSpan(8, 30, 0),
-                ("Galaxy", new TimeSpan(5, 0, 0)), ("LPMS", new TimeSpan(3, 30, 0))),
+                ("Contoso", new TimeSpan(5, 0, 0)), ("Northwind", new TimeSpan(3, 30, 0))),
             Day(25, WorkLocation.Office, new TimeSpan(8, 30, 0),
-                ("Galaxy", new TimeSpan(8, 30, 0))),
+                ("Contoso", new TimeSpan(8, 30, 0))),
         };
 
         var period = PeriodSummary.Build(days, Policy);
 
-        Assert.Equal(new TimeSpan(13, 30, 0), period.ByCustomer["Galaxy"]);
-        Assert.Equal(new TimeSpan(3, 30, 0), period.ByCustomer["LPMS"]);
+        Assert.Equal(new TimeSpan(13, 30, 0), period.ByCustomer["Contoso"]);
+        Assert.Equal(new TimeSpan(3, 30, 0), period.ByCustomer["Northwind"]);
     }
 
     [Fact]

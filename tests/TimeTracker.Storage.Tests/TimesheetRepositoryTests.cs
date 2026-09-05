@@ -148,7 +148,7 @@ public sealed class TimesheetRepositoryTests : IDisposable
     public void ActivitiesRoundTripWithTheirIdsIntact()
     {
         var log = ActivityLog.Empty(Date)
-            .Start("API performance optimization", "Galaxy", On(26, 10, 0))
+            .Start("API performance optimization", "Contoso", On(26, 10, 0))
             .Start("Database migration", "ABC Logistics", On(26, 12, 30));
 
         _repo.SaveActivities(log);
@@ -156,7 +156,7 @@ public sealed class TimesheetRepositoryTests : IDisposable
 
         Assert.Equal(2, loaded.Activities.Count);
         Assert.Equal(log.Activities[0].Id, loaded.Activities[0].Id);
-        Assert.Equal("Galaxy", loaded.Activities[0].Customer);
+        Assert.Equal("Contoso", loaded.Activities[0].Customer);
         Assert.Equal(ActivityStatus.Completed, loaded.Activities[0].Status);
         Assert.NotNull(loaded.Current);
     }
@@ -166,7 +166,7 @@ public sealed class TimesheetRepositoryTests : IDisposable
     {
         // Brief §20 — the whole point of the activity id. A retried MCP call or a retried
         // sync must not produce a second row.
-        var log = ActivityLog.Empty(Date).Start("API work", "Galaxy", On(26, 10, 0));
+        var log = ActivityLog.Empty(Date).Start("API work", "Contoso", On(26, 10, 0));
 
         _repo.SaveActivities(log);
         _repo.SaveActivities(log);
@@ -183,12 +183,12 @@ public sealed class TimesheetRepositoryTests : IDisposable
     {
         // This is §24 across a process boundary: close the widget, reopen it, and it must
         // still know who you were working for.
-        _repo.SaveActivities(ActivityLog.Empty(Date).Start("API work", "Galaxy", On(26, 10, 0)));
+        _repo.SaveActivities(ActivityLog.Empty(Date).Start("API work", "Contoso", On(26, 10, 0)));
 
         var reopened = _repo.LoadActivities(Date);
 
-        Assert.Equal("Galaxy", reopened.CurrentCustomer);
-        Assert.Equal("Galaxy", reopened.Start("Something else", null, On(26, 12, 0)).Current!.Customer);
+        Assert.Equal("Contoso", reopened.CurrentCustomer);
+        Assert.Equal("Contoso", reopened.Start("Something else", null, On(26, 12, 0)).Current!.Customer);
     }
 
     [Fact]
