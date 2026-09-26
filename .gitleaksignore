@@ -1,0 +1,3 @@
+# Intentional fake secrets in docs (teaching examples / scanner self-test). Not credentials.
+LOCAL_TESTING.md:generic-api-key:143
+SECURITY.md:generic-api-key:67
